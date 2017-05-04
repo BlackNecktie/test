@@ -1,0 +1,15 @@
+using System;
+
+namespace ITUtility
+{
+    public static class ByteExtensions
+    {
+        public static string ToBase64String(this byte[] i)
+        {
+            if (i?.Length == 0)
+                return null;
+
+            return Convert.ToBase64String(i);
+        }
+    }
+}
