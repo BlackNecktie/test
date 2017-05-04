@@ -1,0 +1,3 @@
+<connectionStrings>
+    <add name="DefaultConnection" connectionString="Data Source=.\SQLEXPRESS;AttachDbFilename=|DataDirectory|\aspnet-BPayLetter-20151215100123.mdf;Initial Catalog=aspnet-BPayLetter-20151215100123;Integrated Security=True;User Instance=True" providerName="System.Data.SqlClient" />
+  </connectionStrings>
