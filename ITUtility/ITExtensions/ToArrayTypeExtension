@@ -1,0 +1,389 @@
+using System;
+using System.Text;
+
+namespace ITUtility
+{
+    public static class ToArrayTypeExtension
+    {
+        #region " long "
+        // === long ===
+        public static long? ToNullable(this long i)
+        {
+            return Convert.ToInt64(i);
+        }
+        public static long ToNonNullable(this long? i)
+        {
+            if (i == (long?)null)
+                throw new ArgumentNullException("Cannot convert null to 'long' because it is a non-nullable value type");
+            else
+                return Convert.ToInt64(i);
+        }
+
+        public static long?[] ToNullableArray(this long? i)
+        {
+            if (i == (long?)null) { return (long?[])null; }
+            long?[] r = new long?[1];
+            r[0] = i;
+            return r;
+        }
+        public static long?[] ToNullableArray(this long i)
+        {
+            long?[] r = new long?[1];
+            r[0] = i.ToNullable();
+            return r;
+        }
+        public static long[] ToNonNullableArray(this long i)
+        {
+            long[] r = new long[1];
+            r[0] = i;
+            return r;
+        }
+        public static long[] ToNonNullableArray(this long? i)
+        {
+            long[] r = new long[1];
+            r[0] = i.ToNonNullable();
+            return r;
+        }
+        #endregion
+
+        #region " string "
+        // === string ===
+        public static string[] ToStringArray(this string i)
+        {
+            if (i == (string)null) { return (string[])null; }
+            string[] r = new string[1];
+            r[0] = i;
+            return r;
+        }
+        public static long? ToNullablelong(this string i)
+        {
+            if (string.IsNullOrEmpty(i))
+            {
+                return (long?)null;
+            }
+            return Convert.ToInt64(i);
+        }
+        public static int? ToNullableint(this string i)
+        {
+            if (string.IsNullOrEmpty(i))
+            {
+                return (int?)null;
+            }
+            return Convert.ToInt32(i);
+        }
+        public static short? ToNullableshort(this string i)
+        {
+            if (string.IsNullOrEmpty(i))
+            {
+                return (short?)null;
+            }
+            return Convert.ToInt16(i);
+        }
+        public static decimal? ToNullabledecimal(this string i)
+        {
+            if (string.IsNullOrEmpty(i))
+            {
+                return (decimal?)null;
+            }
+            return Convert.ToDecimal(i);
+        }
+        public static double? ToNullabledouble(this string i)
+        {
+            if (string.IsNullOrEmpty(i))
+            {
+                return (double?)null;
+            }
+            return Convert.ToDouble(i);
+        }
+        public static DateTime? ToNullableDateTime(this string i)
+        {
+            if (string.IsNullOrEmpty(i))
+            {
+                return null;
+            }
+            return Convert.ToDateTime(i);
+        }
+        #endregion
+
+        #region " int "
+        // === int ===
+        public static int? ToNullable(this int i)
+        {
+            return Convert.ToInt32(i);
+        }
+        public static int ToNonNullable(this int? i)
+        {
+            if (i == (int?)null)
+                throw new ArgumentNullException("Cannot convert null to 'int' because it is a non-nullable value type");
+            else
+                return Convert.ToInt32(i);
+        }
+
+        public static int?[] ToNullableArray(this int? i)
+        {
+            if (i == (int?)null) { return (int?[])null; }
+            int?[] r = new int?[1];
+            r[0] = i;
+            return r;
+        }
+        public static int?[] ToNullableArray(this int i)
+        {
+            int?[] r = new int?[1];
+            r[0] = i.ToNullable();
+            return r;
+        }
+        public static int[] ToNonNullableArray(this int i)
+        {
+            int[] r = new int[1];
+            r[0] = i;
+            return r;
+        }
+        public static int[] ToNonNullableArray(this int? i)
+        {
+            int[] r = new int[1];
+            r[0] = i.ToNonNullable();
+            return r;
+        }
+        #endregion
+
+        #region " short "
+        // === short ===
+        public static short? ToNullable(this short i)
+        {
+            return Convert.ToInt16(i);
+        }
+        public static short ToNonNullable(this short? i)
+        {
+            if (i == (short?)null)
+                throw new ArgumentNullException("Cannot convert null to 'short' because it is a non-nullable value type");
+            else
+                return Convert.ToInt16(i);
+        }
+
+        public static short?[] ToNullableArray(this short? i)
+        {
+            if (i == (short?)null) { return (short?[])null; }
+            short?[] r = new short?[1];
+            r[0] = i;
+            return r;
+        }
+        public static short?[] ToNullableArray(this short i)
+        {
+            short?[] r = new short?[1];
+            r[0] = i.ToNullable();
+            return r;
+        }
+        public static short[] ToNonNullableArray(this short i)
+        {
+            short[] r = new short[1];
+            r[0] = i;
+            return r;
+        }
+        public static short[] ToNonNullableArray(this short? i)
+        {
+            short[] r = new short[1];
+            r[0] = i.ToNonNullable();
+            return r;
+        }
+        #endregion
+
+        #region " decimal "
+        // === decimal ===
+        public static decimal? ToNullable(this decimal i)
+        {
+            return Convert.ToDecimal(i);
+        }
+        public static decimal ToNonNullable(this decimal? i)
+        {
+            if (i == (decimal?)null)
+                throw new ArgumentNullException("Cannot convert null to 'decimal' because it is a non-nullable value type");
+            else
+                return Convert.ToDecimal(i);
+        }
+
+        public static decimal?[] ToNullableArray(this decimal? i)
+        {
+            if (i == (decimal?)null) { return (decimal?[])null; }
+            decimal?[] r = new decimal?[1];
+            r[0] = i;
+            return r;
+        }
+        public static decimal?[] ToNullableArray(this decimal i)
+        {
+            decimal?[] r = new decimal?[1];
+            r[0] = i.ToNullable();
+            return r;
+        }
+        public static decimal[] ToNonNullableArray(this decimal i)
+        {
+            decimal[] r = new decimal[1];
+            r[0] = i;
+            return r;
+        }
+        public static decimal[] ToNonNullableArray(this decimal? i)
+        {
+            decimal[] r = new decimal[1];
+            r[0] = i.ToNonNullable();
+            return r;
+        }
+        #endregion
+
+        #region " double "
+        // === double ===
+        public static double? ToNullable(this double i)
+        {
+            return Convert.ToDouble(i);
+        }
+        public static double ToNonNullable(this double? i)
+        {
+            if (i == (double?)null)
+                throw new ArgumentNullException("Cannot convert null to 'double' because it is a non-nullable value type");
+            else
+                return Convert.ToDouble(i);
+        }
+
+        public static double?[] ToNullableArray(this double? i)
+        {
+            if (i == (double?)null) { return (double?[])null; }
+            double?[] r = new double?[1];
+            r[0] = i;
+            return r;
+        }
+        public static double?[] ToNullableArray(this double i)
+        {
+            double?[] r = new double?[1];
+            r[0] = i.ToNullable();
+            return r;
+        }
+        public static double[] ToNonNullableArray(this double i)
+        {
+            double[] r = new double[1];
+            r[0] = i;
+            return r;
+        }
+        public static double[] ToNonNullableArray(this double? i)
+        {
+            double[] r = new double[1];
+            r[0] = i.ToNonNullable();
+            return r;
+        }
+        #endregion
+
+        #region " DateTime "
+        // === DateTime ===
+        public static DateTime? ToNullable(this DateTime i)
+        {
+            return Convert.ToDateTime(i);
+        }
+        public static DateTime ToNonNullable(this DateTime? i)
+        {
+            if (i == (DateTime?)null)
+                throw new ArgumentNullException("Cannot convert null to 'DateTime' because it is a non-nullable value type");
+            else
+                return Convert.ToDateTime(i);
+        }
+
+        public static DateTime?[] ToNullableArray(this DateTime? i)
+        {
+            if (i == null) { return null; }
+            DateTime?[] r = new DateTime?[1];
+            r[0] = i;
+            return r;
+        }
+        public static DateTime?[] ToNullableArray(this DateTime i)
+        {
+            if (i == null) { return null; }
+            DateTime?[] r = new DateTime?[1];
+            r[0] = i.ToNullable();
+            return r;
+        }
+        public static DateTime[] ToNonNullableArray(this DateTime i)
+        {
+            DateTime[] r = new DateTime[1];           
+            r[0] = i;
+            return r;
+        }
+        public static DateTime[] ToNonNullableArray(this DateTime? i)
+        {
+            DateTime[] r = new DateTime[1];
+            r[0] = i.ToNonNullable();
+            return r;
+        }
+
+        // Don't Working
+        //public static DateTime? ToStandard(this DateTime? i)
+        //{
+        //    if (i == null)
+        //    {
+        //        return null;
+        //    }
+        //    int d = i.Value.Year - DateTime.Now.Year;
+        //    if (d > 400) // (Allow different +140+ year)
+        //    {
+        //        i.Value.AddYears(543 * -1);
+        //    }
+        //    else if (d < 400)
+        //    {
+        //        i.Value.AddYears(543);
+        //    }
+        //    return i;
+        //}
+
+        // Don't Working
+        //public static DateTime ToStandard(this DateTime i)
+        //{
+        //    int d = i.Year - DateTime.Now.Year;
+        //    if (d > 400) // (Allow different +140+ year)
+        //    {
+        //        i.AddYears(543 * -1);
+        //    }
+        //    else if (d < 400)
+        //    {
+        //        i.AddYears(543);
+        //    }
+        //    return i;
+        //}
+        #endregion
+
+        #region " char "
+        // === char ===
+        public static char? ToNullable(this char i)
+        {
+            return Convert.ToChar(i);
+        }
+        public static char ToNonNullable(this char? i)
+        {
+            if (i == (char?)null)
+                throw new ArgumentNullException("Cannot convert null to 'char' because it is a non-nullable value type");
+            else
+                return Convert.ToChar(i);
+        }
+
+        public static char?[] ToNullableArray(this char? i)
+        {
+            if (i == null) { return null; }
+            char?[] r = new char?[1];
+            r[0] = i;
+            return r;
+        }
+        public static char?[] ToNullableArray(this char i)
+        {
+            char?[] r = new char?[1];
+            r[0] = i.ToNullable();
+            return r;
+        }
+        public static char[] ToNonNullableArray(this char i)
+        {
+            char[] r = new char[1];
+            r[0] = i;
+            return r;
+        }
+        public static char[] ToNonNullableArray(this char? i)
+        {
+            char[] r = new char[1];
+            r[0] = i.ToNonNullable();
+            return r;
+        }
+        #endregion
+    }
+}
