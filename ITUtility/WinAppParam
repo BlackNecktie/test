@@ -1,0 +1,74 @@
+using System;
+
+namespace ITUtility
+{
+    public class WinAppParam
+    {
+        protected class p
+        {
+            public string a { get; set; }
+            public string b { get; set; }
+            public DateTime c { get; set; }
+            public string d { get; set; }
+        }
+
+        private string _UserID;
+        public string UserID
+        {
+            get { return _UserID; }
+            set { _UserID = value; }
+        }
+
+        private string _Password;
+        public string Password
+        {
+            get { return _Password; }
+            set { _Password = value; }
+        }
+
+        private DateTime _LoginDate;
+        public DateTime LoginDate
+        {
+            get { return _LoginDate; }
+            set { _LoginDate = value; }
+        }
+
+        private string _StartCommand;
+        public string StartCommand
+        {
+            get { return _StartCommand; }
+            set { _StartCommand = value; }
+        }
+
+        public WinAppParam()
+        {
+            this._UserID = string.Empty;
+            this._Password = string.Empty;
+            this._LoginDate = DateTime.Now;
+            this._StartCommand = string.Empty;
+        }
+
+        public WinAppParam(string Base64String)
+        {
+            p _p = (p)Utility.DeserializeFromBase64String(Base64String, typeof(p));
+
+            this._UserID = _p.a;
+            this._Password = _p.b;
+            this._LoginDate = _p.c;
+            this._StartCommand = _p.d;
+        }
+
+        public string ToBase64String()
+        {
+            p _p = new p
+            {
+                a = this._UserID.IfNullOrEmptyReturn(string.Empty),
+                b = this._Password.IfNullOrEmptyReturn(string.Empty),
+                c = this._LoginDate.IfNullOrEmptyReturn(DateTime.Now),
+                d = this._StartCommand.IfNullOrEmptyReturn(string.Empty)
+            };
+
+            return Utility.SerializeToBase64String(_p);
+        }
+    }
+}
