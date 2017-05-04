@@ -1,0 +1,172 @@
+using DataAccessUtility.Security;
+using Oracle.DataAccess.Client;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.Configuration;
+
+namespace DataAccessUtility
+{
+    public class RepositoryBase
+    {
+        public RepositoryBase() {
+
+        }
+
+
+        public RepositoryBase(string ConnectionName)
+        {
+            try
+            {
+                CreateConstructor(ConnectionName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public RepositoryBase(OracleConnection _connection)
+        {
+            try
+            {
+                ConnectionString = _connection.ConnectionString;
+                connection = _connection;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private void CreateConstructor(string ConnectionName)
+        {
+            if (ConnectionName != null)
+            {
+                if (WebConfigurationManager.ConnectionStrings != null)
+                {
+                    if (WebConfigurationManager.ConnectionStrings[ConnectionName] != null)
+                    {
+                        string connectionEncryptString = WebConfigurationManager.ConnectionStrings[ConnectionName].ConnectionString;
+                        if (connectionEncryptString.Contains("DATA SOURCE"))
+                        {
+                            ConnectionString = connectionEncryptString;
+                        }
+                        else
+                        {
+                            ConnectionString = SecurityHelper.Decrypt(connectionEncryptString);
+                        }
+                        connection = new OracleConnection(ConnectionString);
+                    }
+                    else if (ConfigurationManager.ConnectionStrings[ConnectionName] != null)
+                    {
+                        string connectionEncryptString = ConfigurationManager.ConnectionStrings[ConnectionName].ConnectionString;
+                        if (connectionEncryptString.Contains("DATA SOURCE"))
+                        {
+                            ConnectionString = connectionEncryptString;
+                        }
+                        else
+                        {
+                            ConnectionString = SecurityHelper.Decrypt(connectionEncryptString);
+                        }
+                        connection = new OracleConnection(ConnectionString);
+                    }
+                    else
+                    {
+                        throw new Exception("ConnectionString Not Found!");
+                    }
+                }
+                else
+                {
+                    throw new Exception("WebConfig Tag ConnectionStrings Not Found!");
+                }
+            }
+            else
+            {
+                throw new Exception("ConnectionName Not Found!");
+            }
+        }
+
+        #region "[Connection]"
+
+        private string _ConnectionString;
+
+        public string ConnectionString
+        {
+            get { return _ConnectionString; }
+            set
+            {
+                _ConnectionString = value;
+                connection = new OracleConnection(value);
+            }
+        }
+
+
+        protected OracleConnection connection;
+
+        public OracleConnection Connection
+        {
+            get { return connection; }
+            set { connection = value; }
+        }
+
+        public void OpenConnection()
+        {
+            connection.Open();
+        }
+
+        public void CloseConnection()
+        {
+            connection.Close();
+            connection.Dispose();
+        }
+
+        #endregion "[Connection]"
+
+        #region "[Transaction]"
+        protected OracleTransaction transaction;
+        public void beginTransaction()
+        {
+            transaction = connection.BeginTransaction();
+        }
+
+        public void commitTransaction()
+        {
+            transaction.Commit();
+            transaction.Dispose();
+        }
+
+        public void rollbackTransaction()
+        {
+            transaction.Rollback();
+            transaction.Dispose();
+        }
+
+        #endregion "[Transaction]"
+
+        #region "[SysDate]"
+
+        private DateTime _SysDate;
+
+        public DateTime SysDate
+        {
+            get { return _SysDate; }
+            set { _SysDate = value; }
+        }
+
+        public void GetDbSysDate()
+        {
+
+            string sqlStr =
+                "select sysdate from dual";
+            OracleCommand oCmd = new OracleCommand(sqlStr, connection);
+            SysDate = Convert.ToDateTime(oCmd.ExecuteScalar());
+        }
+
+        #endregion "[SysDate]"
+
+    }
+}
