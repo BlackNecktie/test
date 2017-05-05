@@ -1,3 +1,6 @@
 <connectionStrings>
     <add name="DefaultConnection" connectionString="Data Source=.\SQLEXPRESS;AttachDbFilename=|DataDirectory|\aspnet-BPayLetter-20151215100123.mdf;Initial Catalog=aspnet-BPayLetter-20151215100123;Integrated Security=True;User Instance=True" providerName="System.Data.SqlClient" />
   </connectionStrings>
+
+
+<add name="DEV" connectionString="Data Source=//172.16.10.23:1521/BLA;Persist Security Info=True;User Id=user;Password=qwert; " providerName="Oracle.DataAccess.Client" />
