@@ -1,0 +1,83 @@
+public ActionResult GetData_Rpt_Policy_Cancel_forAccount()
+        {
+            ProcessResult pr = new ProcessResult();
+            string Rpttype = Request["Rpttype"];
+            string era = "BU";
+            if (CultureName != "th-th") { era = ""; }
+
+
+            DateTime? APPR_DT_STARTDATE = beginDate(Utility.StringToDateTime(Request["APPR_DT_STARTDATE"], era));
+            DateTime? APPR_DT_ENDDATE = endDate(Utility.StringToDateTime(Request["APPR_DT_ENDDATE"], era));
+            int? APPR_NO_START = ISINT(Request["APPR_NO_START"]);
+            int? APPR_NO_END = ISINT(Request["APPR_NO_END"]);
+            string DEPART = ISNO_IS(Request["DEPART"]);
+            string SUB_JOB_CODE = ISNO_IS(Request["SUB_JOB_CODE"]);
+
+            DATA_USER zuser = (DATA_USER)Session["USER_DATA"];
+            if (zuser == null)
+            {
+                return null;
+            }
+            DATA_RPT_POLICY_CANCEL_ACCOUNT Tempdata = null;
+            P_POS_RPT_CANCEL_ACCOUNT_CMT[] DtTemp;
+            P_POS_RPT_CANCEL_ACCOUNT_HEARDER_CMT HdTemp;
+            using (RptPPC client = new RptPPC())
+            {
+                pr = client.GetReportPolicyCancelForAccount(out Tempdata,  SUB_JOB_CODE, DEPART,APPR_NO_START, APPR_NO_END, APPR_DT_STARTDATE, APPR_DT_ENDDATE, CultureName);
+                HdTemp = Tempdata.Header;
+                DtTemp = Tempdata.Details;
+            }
+            if (pr.ErrorMessage != null)
+            {
+                return null;
+            }
+            if (!Tempdata.Details.Any() || Tempdata.Details == null)
+            {
+                return null;
+            }
+            PolicyCancelforAccount Report = new PolicyCancelforAccount(Tempdata);
+            string filename = null;
+            switch (Rpttype)
+            {
+                case "EXCEL":
+                    filename = "PolicyCancelforAccount.xlsx";
+                    break;
+                case "PDF":
+                    filename = "PolicyCancelforAccount.pdf";
+                    break;
+                default:
+                    filename = "PolicyCancelforAccount.pdf";
+                    break;
+            }
+            return sendFile(Report, filename, Rpttype);
+        }
+        
+        
+        
+        
+        
+private FileContentResult sendFile(XtraReport Report, string filename, string Rpttype)
+        {
+            FileContentResult Filex = null;
+            MemoryStream stream = new MemoryStream();
+            byte[] FILE = null;
+            Response.SetCookie(new HttpCookie("fileDownload", "true") { Path = "/" });
+            switch (Rpttype)
+            {
+                case "EXCEL":
+                    Report.ExportToXlsx(stream);
+                    FILE = stream.ToArray();
+                    Filex = File(FILE, "application/xlsx", filename);
+                    break;
+                case "PDF":
+                    Report.ExportToPdf(stream);
+                    FILE = stream.ToArray();
+                    Filex = File(FILE, "application/pdf", filename);
+                    break;
+                default:
+                    Report.ExportToPdf(stream);
+                    FILE = stream.ToArray();
+                    Filex = File(FILE, "application/pdf", filename);
+                    break;
+            }
+            return Filex;
