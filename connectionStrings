@@ -4,3 +4,12 @@
 
 
 <add name="DEV" connectionString="Data Source=//172.16.10.23:1521/BLA;Persist Security Info=True;User Id=user;Password=qwert; " providerName="Oracle.DataAccess.Client" />
+
+String dbConnectionName = System.Configuration.ConfigurationManager.ConnectionStrings["DEV"].ConnectionString;
+            OracleConnection conn = new OracleConnection(dbConnectionName);
+            OracleCommand cmd = new OracleCommand();
+            string sql = @"select * from P_POLICY_SENDING;";
+            OracleDataAdapter adapter = new OracleDataAdapter(sql, conn);
+            DataTable dt = new DataTable();
+            adapter.Fill(dt);
+            adapter.Dispose();
