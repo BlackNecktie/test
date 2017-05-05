@@ -1,0 +1,14 @@
+<script>
+    $("#fromDate").datepicker({
+        yearOffSet: 543,
+        showOn: "button",
+        buttonImage: "../Image/calendar24.gif",
+        buttonImageOnly: true
+    });
+    $("#toDate").datepicker({
+        yearOffSet: 543,
+        showOn: "button",
+        buttonImage: "../Image/calendar24.gif",
+        buttonImageOnly: true
+    });
+</script>
