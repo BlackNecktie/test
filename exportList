@@ -1,0 +1,28 @@
+$scope.exportList = function () {
+        $("#modal-1, #overlay-1").css("visibility", "visible");
+        var title = "";
+        if ($("#filterPlan").val() != "%") {
+            title = title + "" + $("#filterPlan option:selected").text();
+        }
+        if ($("#filterStatus").val() != "%") {
+            title = title + " สถานะ: " + $("#filterStatus option:selected").text();
+        }
+        if ($("#fromSumm").val().length > 0 && $("#toSumm").val().length > 0) {
+            title = title + " ทุน: " + $("#fromSumm").val() + "-" + $("#toSumm").val();
+        }
+        if ($("#fromDate").val().length > 0 && $("#toDate").val().length > 0) {
+            title = title + " วันที่ใบคำขอ: " + $("#fromDate").val() + "-" + $("#toDate").val();
+        }
+        $http.post('../Application/ExportApp/', {
+            filterUserid: $("#userid").val(),
+            title: title,
+            filter: JSON.stringify({ filterList: JSON.stringify($scope.todos) }),
+        }).success(function (dataList) {
+            if (dataList.result) {
+                window.open("../Application/getjob?jobid=" + dataList.jobid, "_blank");
+            }
+            $("#modal-1, #overlay-1").css("visibility", "hidden");
+        }).error(function (error) {
+            $('#errorTxt').text(error.Message);
+            $('.pushmenu-bottom').addClass("pushmenu-open");
+        });
