@@ -1,3 +1,20 @@
+var table1 = {};
+var table2 = {};
+var table3 = {};
+var table4 = {};
+var table5 = {};
+var table6 = {};
+var myurl = null;
+$(document).ready(function () {
+    var posting = $.post(GetMsgMultiLanguage);
+    posting.done(function (data) {
+        lang = data.lang;
+        myurl = data.url;
+        session = data.sess;
+        fnInitial();
+    });
+});
+-----------------------------------------------------------------------------------------------------------------
 fnGetRptPolicyCancelForAccount = function (RptType) {
     if (table4.dataTable().fnGetNodes().length === 0) {
         alertWarning("ไม่พบข้อมูล");
