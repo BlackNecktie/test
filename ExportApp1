@@ -1,0 +1,113 @@
+       public JsonResult ExportApp1(String title,String filter)
+        {
+            String reportPath = System.Configuration.ConfigurationManager.AppSettings["ReportPath"];
+            string fileTemplate = HostingEnvironment.MapPath(@"~/ExcelTemplate");
+            fileTemplate = fileTemplate + "/AppTemplate1.xlsx";
+            string jobId = "App" + Utility.GenerateId();
+            string cacheReport = reportPath + jobId + ".xlsx";
+
+            try
+            {
+
+                JObject data = JObject.Parse(filter);
+                dynamic filterJson = data;
+                string jsonList = filterJson.filterList;
+                string jsonSum = filterJson.filterSum;
+                dynamic dynJson = JsonConvert.DeserializeObject(jsonList);
+                dynamic sumJson = JsonConvert.DeserializeObject(jsonSum);
+
+                System.IO.File.Copy(fileTemplate, cacheReport, true);
+                FileStream sw = new FileStream(cacheReport, FileMode.Open, FileAccess.Read);
+                XSSFWorkbook workbook = new XSSFWorkbook(sw);
+                sw.Close();
+                sw.Dispose();
+
+                ISheet sheet = workbook.GetSheet("Sheet1");
+
+                ICell cloneCell0_0 = sheet.GetRow(0).GetCell(0); ICellStyle cellStyle0_0 = workbook.CreateCellStyle(); cellStyle0_0.CloneStyleFrom(cloneCell0_0.CellStyle);
+                ICell cloneCell0_1 = sheet.GetRow(0).GetCell(1); ICellStyle cellStyle0_1 = workbook.CreateCellStyle(); cellStyle0_1.CloneStyleFrom(cloneCell0_1.CellStyle);
+                ICell cloneCell0_2 = sheet.GetRow(0).GetCell(2); ICellStyle cellStyle0_2 = workbook.CreateCellStyle(); cellStyle0_2.CloneStyleFrom(cloneCell0_2.CellStyle);
+                ICell cloneCell0_3 = sheet.GetRow(0).GetCell(3); ICellStyle cellStyle0_3 = workbook.CreateCellStyle(); cellStyle0_3.CloneStyleFrom(cloneCell0_3.CellStyle);
+                ICell cloneCell0_4 = sheet.GetRow(0).GetCell(4); ICellStyle cellStyle0_4 = workbook.CreateCellStyle(); cellStyle0_4.CloneStyleFrom(cloneCell0_4.CellStyle);
+                ICell cloneCell0_5 = sheet.GetRow(0).GetCell(5); ICellStyle cellStyle0_5 = workbook.CreateCellStyle(); cellStyle0_5.CloneStyleFrom(cloneCell0_5.CellStyle);
+                ICell cloneCell0_6 = sheet.GetRow(0).GetCell(6); ICellStyle cellStyle0_6 = workbook.CreateCellStyle(); cellStyle0_6.CloneStyleFrom(cloneCell0_6.CellStyle);
+                ICell cloneCell0_7 = sheet.GetRow(0).GetCell(7); ICellStyle cellStyle0_7 = workbook.CreateCellStyle(); cellStyle0_7.CloneStyleFrom(cloneCell0_7.CellStyle);
+                ICell cloneCell0_8 = sheet.GetRow(0).GetCell(8); ICellStyle cellStyle0_8 = workbook.CreateCellStyle(); cellStyle0_8.CloneStyleFrom(cloneCell0_8.CellStyle);
+                ICell cloneCell0_9 = sheet.GetRow(0).GetCell(9); ICellStyle cellStyle0_9 = workbook.CreateCellStyle(); cellStyle0_9.CloneStyleFrom(cloneCell0_9.CellStyle);
+
+                ICell cloneCell1_0 = sheet.GetRow(1).GetCell(0); ICellStyle cellStyle1_0 = workbook.CreateCellStyle(); cellStyle1_0.CloneStyleFrom(cloneCell1_0.CellStyle);
+                ICell cloneCell1_1 = sheet.GetRow(1).GetCell(1); ICellStyle cellStyle1_1 = workbook.CreateCellStyle(); cellStyle1_1.CloneStyleFrom(cloneCell1_1.CellStyle);
+                ICell cloneCell1_2 = sheet.GetRow(1).GetCell(2); ICellStyle cellStyle1_2 = workbook.CreateCellStyle(); cellStyle1_2.CloneStyleFrom(cloneCell1_2.CellStyle);
+                ICell cloneCell1_3 = sheet.GetRow(1).GetCell(3); ICellStyle cellStyle1_3 = workbook.CreateCellStyle(); cellStyle1_3.CloneStyleFrom(cloneCell1_3.CellStyle);
+                ICell cloneCell1_4 = sheet.GetRow(1).GetCell(4); ICellStyle cellStyle1_4 = workbook.CreateCellStyle(); cellStyle1_4.CloneStyleFrom(cloneCell1_4.CellStyle);
+                ICell cloneCell1_5 = sheet.GetRow(1).GetCell(5); ICellStyle cellStyle1_5 = workbook.CreateCellStyle(); cellStyle1_5.CloneStyleFrom(cloneCell1_5.CellStyle);
+                ICell cloneCell1_6 = sheet.GetRow(1).GetCell(6); ICellStyle cellStyle1_6 = workbook.CreateCellStyle(); cellStyle1_6.CloneStyleFrom(cloneCell1_6.CellStyle);
+                ICell cloneCell1_7 = sheet.GetRow(1).GetCell(7); ICellStyle cellStyle1_7 = workbook.CreateCellStyle(); cellStyle1_7.CloneStyleFrom(cloneCell1_7.CellStyle);
+                ICell cloneCell1_8 = sheet.GetRow(1).GetCell(8); ICellStyle cellStyle1_8 = workbook.CreateCellStyle(); cellStyle1_8.CloneStyleFrom(cloneCell1_8.CellStyle);
+                ICell cloneCell1_9 = sheet.GetRow(1).GetCell(9); ICellStyle cellStyle1_9 = workbook.CreateCellStyle(); cellStyle1_9.CloneStyleFrom(cloneCell1_9.CellStyle);
+
+
+
+                int rowIndex = 6;
+                IRow row;
+                ICell cell;
+
+                row = sheet.GetRow(2);
+                cell = row.GetCell(0);
+                cell.SetCellValue("สรุปข้อมูลใบคำขอประจำปี "+ title);
+
+                row = sheet.GetRow(4);
+                cell = row.GetCell(0);
+                cell.SetCellValue("วันที่พิมพ์ " + DateTime.Now.ToString("dd/MM/yyyy"));
+
+                foreach (var item in dynJson)
+                {
+                    rowIndex++;
+                    row = sheet.CreateRow(rowIndex);
+                    cell = row.CreateCell(0); cell.SetCellValue((String)item.MONTH); cell.CellStyle = cellStyle0_0;
+                    cell = row.CreateCell(1); cell.SetCellValue(Convert.ToDouble((String)item.ITEM_TOTAL_OD)); cell.CellStyle = cellStyle0_1;
+                    cell = row.CreateCell(2); cell.SetCellValue(Convert.ToDouble((String)item.SUMM_TOTAL_OD)); cell.CellStyle = cellStyle0_2;
+                    cell = row.CreateCell(3); cell.SetCellValue(Convert.ToDouble((String)item.PREM_TOTAL_OD)); cell.CellStyle = cellStyle0_3;
+                    cell = row.CreateCell(4); cell.SetCellValue(Convert.ToDouble((String)item.ITEM_TOTAL_BNC)); cell.CellStyle = cellStyle0_4;
+                    cell = row.CreateCell(5); cell.SetCellValue(Convert.ToDouble((String)item.SUMM_TOTAL_BNC)); cell.CellStyle = cellStyle0_5;
+                    cell = row.CreateCell(6); cell.SetCellValue(Convert.ToDouble((String)item.PREM_TOTAL_BNC)); cell.CellStyle = cellStyle0_6;
+                    cell = row.CreateCell(7); cell.SetCellValue(Convert.ToDouble((String)item.ITEM_TOTAL)); cell.CellStyle = cellStyle0_7;
+                    cell = row.CreateCell(8); cell.SetCellValue(Convert.ToDouble((String)item.SUMM_TOTAL)); cell.CellStyle = cellStyle0_8;
+                    cell = row.CreateCell(9); cell.SetCellValue(Convert.ToDouble((String)item.PREM_TOTAL)); cell.CellStyle = cellStyle0_9;
+                }
+                foreach (var item in sumJson)
+                {
+                    rowIndex++;
+                    row = sheet.CreateRow(rowIndex);
+                    cell = row.CreateCell(0); cell.SetCellValue("รวม"); cell.CellStyle = cellStyle1_0;
+                    cell = row.CreateCell(1); cell.SetCellValue(Convert.ToDouble((String)item.ITEM_TOTAL_OD)); cell.CellStyle = cellStyle1_1;
+                    cell = row.CreateCell(2); cell.SetCellValue(Convert.ToDouble((String)item.SUMM_TOTAL_OD)); cell.CellStyle = cellStyle1_2;
+                    cell = row.CreateCell(3); cell.SetCellValue(Convert.ToDouble((String)item.PREM_TOTAL_OD)); cell.CellStyle = cellStyle1_3;
+                    cell = row.CreateCell(4); cell.SetCellValue(Convert.ToDouble((String)item.ITEM_TOTAL_BNC)); cell.CellStyle = cellStyle1_4;
+                    cell = row.CreateCell(5); cell.SetCellValue(Convert.ToDouble((String)item.SUMM_TOTAL_BNC)); cell.CellStyle = cellStyle1_5;
+                    cell = row.CreateCell(6); cell.SetCellValue(Convert.ToDouble((String)item.PREM_TOTAL_BNC)); cell.CellStyle = cellStyle1_6;
+                    cell = row.CreateCell(7); cell.SetCellValue(Convert.ToDouble((String)item.ITEM_TOTAL)); cell.CellStyle = cellStyle1_7;
+                    cell = row.CreateCell(8); cell.SetCellValue(Convert.ToDouble((String)item.SUMM_TOTAL)); cell.CellStyle = cellStyle1_8;
+                    cell = row.CreateCell(9); cell.SetCellValue(Convert.ToDouble((String)item.PREM_TOTAL)); cell.CellStyle = cellStyle1_9;
+                }
+                FileStream fs = new FileStream(cacheReport, FileMode.Create, FileAccess.Write);
+                workbook.Write(fs);
+                fs.Close();
+                fs.Dispose();
+
+            }
+            catch (OracleException ex)
+            {
+                logger.Error("Error logging" + ex.StackTrace);
+                return ThrowJsonError(ex);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Error logging" + ex.StackTrace);
+                return ThrowJsonError(ex);
+            }
+            finally
+            {
+            }
+
+            return Json(new { result = true, jobid = jobId + ".xlsx" });
