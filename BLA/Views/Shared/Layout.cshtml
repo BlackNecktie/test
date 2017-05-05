@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <link href="~/Content/plugins/bootstrap/bootstrap.css" rel="stylesheet">
+    <link href="~/Content/plugins/jquery-ui/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+    <link href="~/css/font-awesome.css" rel="stylesheet">
+    <link href="~/css/style.min.css" rel="stylesheet" type="text/css">
+    <link href="~/Content/plugins/scrollbar/jquery.mCustomScrollbar.css" rel="stylesheet">
+    <link href="~/Content/plugins/fancybox/jquery.fancybox.css" rel="stylesheet">
+    <link href="~/Content/plugins/responsive-nav/responsive-nav.css" rel="stylesheet">
+    <link href="~/Content/css/select2.css" rel="stylesheet" />
+    <link href="~/Content/css/chosen.min.css" rel="stylesheet" />
+    <link href="~/Content/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <style>
+        .form-control {
+            height: 28px;
+        }
+    </style>
+</head>
+<body>
+    <!--Start Header-->
+    <header class="navbar-fixed">
+        <div class="container-fluid expanded-panel">
+            <div class="row">
+                <div id="logo" class="col-xs-3 col-md-1 col-lg-1">
+                    <div class="bg-label">
+                        <div class="logo"><img src="@Url.Content("~/Image/logo.png")"></div>
+                    </div>
+                </div>
+
+                <div id="top-panel" class="col-xs-9 col-md-11 col-lg-11">
+                    <div class="row">
+
+                        <div class="col-xs-12 col-sm-12 top-panel-right">
+                            <span class="bgtxttop"><label class="txt">@ViewBag.SystemName</label></span>
+                            @Html.Partial("_LoginPartial")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!--End Header-->
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="~/Content/plugins/bootstrap/bootstrap.min.js"></script>
+    <script src="~/Content/plugins/scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script src="~/Content/plugins/jquery-ui/jquery-ui-1.10.3.custom.js"></script>
+    <script src="~/Content/plugins/fancybox/jquery.fancybox.js"></script>
+    <script src="~/Content/plugins/responsive-nav/responsive-nav.js"></script>
+    <script src="~/Scripts/select2.min.js"></script>
+    <!-- All functions for this theme + document.ready processing -->
+    <script src="~/js/tab.js"></script>
+    <script src="~/Scripts/chosen.jquery.min.js"></script>
+    <script src="~/Scripts/jquery.maskedinput.js"></script>
+    <script src="~/Scripts/jquery.dataTables.min.js"></script>
+    @RenderBody()
+    @Html.Partial("Loading")
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>
