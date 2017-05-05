@@ -1,0 +1,26 @@
+fnGetRptPolicyCancelForAccount = function (RptType) {
+    if (table4.dataTable().fnGetNodes().length === 0) {
+        alertWarning("ไม่พบข้อมูล");
+        return;
+    }
+
+    var APPR_DT_STARTDATE = "&APPR_DT_STARTDATE=" + $("#txtAppreoveStart").val();
+    var APPR_DT_ENDDATE = "&APPR_DT_ENDDATE=" + $("#txtAppreoveEnd").val();
+    var APPR_NO_START = "&APPR_NO_START=" + $("#txtApproveNoStart").val();
+    var APPR_NO_END = "&APPR_NO_END=" + $("#txtApproveNoEnd").val();
+    var DEPART = "&DEPART=" + $("#txtBCT_TB_PART").val();
+    var SUB_JOB_CODE = "&SUB_JOB_CODE=" + $("#txtSUBJOBCODE").val();
+
+    var para = "?Rpttype=" + RptType;
+    var url = myurl.GetData_Rpt_Policy_Cancel_forAccount + para + APPR_DT_STARTDATE + APPR_DT_ENDDATE + APPR_NO_START + APPR_NO_END + DEPART + SUB_JOB_CODE;
+    ShowLoading(true);
+    $.fileDownload(url, {
+        successCallback: function (url) {
+            ShowLoading(false);
+        },
+        failCallback: function (responseHtml, url, data) {
+            ShowLoading(false);
+            alertWarning("เซสชันหมดอายุ กรุณาลงชื่อเข้าใช้");
+        }
+    });
+};
