@@ -1,0 +1,177 @@
+
+@{
+    ViewBag.Title = "Index";
+    ViewBag.SystemName = "Agent Behaviour Inquery";
+}
+<style>
+/*.table-fixed thead {
+  width: 97%;
+}
+.table-fixed tbody {
+  height: 230px;
+  overflow-y: auto;
+  width: 100%;
+}
+.table-fixed thead, .table-fixed tbody, .table-fixed tr, .table-fixed td, .table-fixed th {
+  display: block;
+}
+.table-fixed tbody td, .table-fixed thead > tr> th {
+  float: left;
+  border-bottom-width: 0;
+}*/
+tr {
+width: 100%;
+display: inline-table;
+}
+
+table{
+ height:300px; 
+ /*border:ridge;*/
+}
+tbody{
+  overflow-y: scroll;
+  height: 100px;
+  width: 100%;
+  position: absolute;
+}
+td > p{
+    border-bottom:ridge;
+}
+td{
+    padding:0px;
+    border-bottom:ridge;
+    border-right:ridge;
+}
+
+</style>
+
+<div class="container" style="margin-top:60px;">
+    <div class="row">
+        <div class="row">
+            @*<div class="col-sm-12" style="background-color:Highlight">
+
+                </div>*@
+            <div class="body-content col-sm-12">
+                <ul class="nav nav-tabs">
+                    <li role="presentation" class="active"><a data-toggle="tab">ความประพฤติตัวแทน</a></li>
+                    <li role="presentation"><a data-toggle="tab">menu2</a></li>
+                </ul>
+                <div class="tab-content" style="background-color:Highlight">
+                    <div id="firstTab" class="tab-pane fade in active">
+                        <br />
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group-sm" style="margin-left:20px;">
+                                    <label class="lablex" style="text-align:left;">รหัสตัวแทน</label>
+                                    <input type="text" class="textbox" />
+                                </div>
+                                <div class="form-group-sm" style="margin-left:20px;">
+                                    <label class="lablex">ชื่อ-นามสกุล</label>
+                                    <input type="text" class="textbox" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group-sm" style="margin-left:20px;">
+                                    <label style="color:red;">@ViewBag.WarmingMessage</label>
+                                </div>
+                                <div class="form-group-sm">
+                                    <label class="lablex">สถานะ</label>
+                                    <input type="text" class="textbox" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group-sm" style="margin-left:20px;">
+                                    <label class="lablex" style="text-align:left;">Idcard No</label>
+                                    <input type="text" class="textbox" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group-sm">
+                                    <label class="lablex">สังกัดหน่วย</label>
+                                    <input type="text" class="textbox" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top:20px;">
+            <div class="container">
+                <div class="body-content col-sm-12" style="background-color:Highlight">
+                    <div class="container"  >
+                        <div class="row">
+                            <div class="col-md-12">
+
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-xs-3">
+                                                <p>Col 1</p>
+                                                <p>Col 1</p>
+                                                <p>Col 1</p>
+                                                <p>Col 1</p>
+                                            </th>
+                                            <th class="col-xs-3">Col 2</th>
+                                            <th class="col-xs-3">Col 3</th>
+                                            <th class="col-xs-3">Col 4</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="col-xs-3">
+                                                <p>1111</p>
+                                                <p>1111</p>
+                                                <p>1111</p>
+                                            </td>
+                                            <td class="col-xs-3">
+                                                name
+                                            </td>
+                                            <td class="col-xs-3">
+                                                surname
+                                            </td>
+                                            <td class="col-xs-3">
+                                                surname
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col-xs-3">
+                                                <p>1111</p>
+                                                <p>1111</p>
+                                                <p>1111</p>
+                                            </td>
+                                            <td class="col-xs-3">
+                                                name
+                                            </td>
+                                            <td class="col-xs-3">
+                                                surname
+                                            </td>
+                                            <td class="col-xs-3">
+                                                surname
+                                            </td>
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    @*<div class="row">
+                        </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+
+    })
+
+</script>
+@*@section scripts{
+        <script src="~/Scripts/Default.js"></script>
+    }*@
