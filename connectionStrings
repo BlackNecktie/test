@@ -4,6 +4,7 @@
 
 
 <add name="DEV" connectionString="Data Source=//172.16.10.23:1521/BLA;Persist Security Info=True;User Id=user;Password=qwert; " providerName="Oracle.DataAccess.Client" />
+<add name="DEV" connectionString="DATA SOURCE=//172.16.10.23:1521/BLA;PERSIST SECURITY INFO=True;USER ID=user;PASSWORD=qwert;pooling=false;Connection Timeout=60;" providerName="" />
 
 String dbConnectionName = System.Configuration.ConfigurationManager.ConnectionStrings["DEV"].ConnectionString;
             OracleConnection conn = new OracleConnection(dbConnectionName);
