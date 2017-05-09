@@ -1,0 +1,51 @@
+@{
+    string NAME = null;
+    string USER_ID = null;
+    if (Session["USERID"] != null && Session["FULL_NAME"] != null)
+    {
+        USER_ID = (string)Session["USERID"];
+        NAME = (string)Session["FULL_NAME"];
+    }
+}
+@if (Session["USERID"] != null)
+{
+    @HeaderBar(true, NAME, USER_ID)
+}
+else
+{
+    @HeaderBar(false, null, null)
+}
+@helper HeaderBar(bool FLG_USER_DATA, string NAME, string USER_ID)
+{
+    <ul class="nav navbar-nav pull-right panel-menu">
+        @if (FLG_USER_DATA)
+        {
+            <li class="UserName">
+                <i class="fa fa-user"></i> @(NAME + " (" + USER_ID + ")")
+            </li>
+        }
+        <li>
+            @if (FLG_USER_DATA)
+            {
+                <a href="@Url.Action("Logout", "Login")">
+                    <i class="fa fa-power-off"></i>
+                    @*<span class="hidden-sm text">Logout</span>*@
+                    <span class="text">Logout</span>
+                </a>
+            }
+            else
+            {
+                <a href="@Url.Action("Login", "Login")">
+                    <i class="fa fa-power-off">
+                    </i>
+                    @*<span class="hidden-sm text">Login</span>*@
+                    <span class="text">Login</span>
+                </a>
+            }
+        </li>
+
+    </ul>
+}
+
+
+
