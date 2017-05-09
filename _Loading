@@ -1,0 +1,61 @@
+<style>
+    #Panel-Loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        margin-top: -22px;
+        margin-left: -22px;
+        background-position: 0 -108px;
+        /*opacity: 0.8;*/
+        cursor: pointer;
+        z-index: 8060;
+    }
+
+        #Panel-Loading div {
+            width: 44px;
+            height: 44px;
+            background: url('http://intranetuat.bla.co.th/Persistency/Content/Loading/Loading.gif') center center no-repeat;
+        }
+
+    .Panel-Loading-BG {
+        height: 100%;
+        width: 100%;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 8010;
+        background: url('http://intranetuat.bla.co.th/Persistency/Content/Loading/BG_Overlay.png');
+        opacity: 0.7;
+    }
+
+    #Panel-Loading {
+        background-image: url('http://intranetuat.bla.co.th/Persistency/Content/Loading/BG_Sprite.png');
+    }
+
+    .Panel-Detail {
+        position: fixed;
+        top: 58%;
+        left: 43%;
+        margin-top: -22px;
+        margin-left: -22px;
+        z-index: 9060;
+        color: #00a7e7;
+        font-size: 35px;
+    }
+</style>
+<div class="divLoading " style="display:none;">
+    <div class="Panel-Loading-BG">
+    </div>
+    <div id="Panel-Loading">
+        <div></div>
+    </div>
+</div>
+
+<div class="divLoadingExport" style="display:none;">
+    <div class="Panel-Loading-BG">
+    </div>
+    <div id="Panel-Loading">
+        <div></div>
+    </div>
+    <div class="Panel-Detail"><center>ระบบกำลังดำเนินการ<br />อาจใช้เวลานานหลายนาที ...</center></div>
+</div>
