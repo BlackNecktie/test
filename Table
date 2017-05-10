@@ -1,0 +1,113 @@
+
+@{
+    ViewBag.Title = "TestTable";
+}
+
+<style>
+    td{
+        border-left:5px solid aquamarine;
+    }
+    thead{
+        /*overflow-y: scroll;*/
+        /*height: 100px;*/
+        /*position:absolute;*/
+        width: 100%;
+        border:5px solid aquamarine;
+    }
+    thead>tr>th{
+        text-align:center;
+        border-left:none;
+    }
+    tbody {
+        overflow-y: scroll;
+        height: 200px;
+        position:absolute;
+        width: 100%;
+        /*margin-top:100px;*/
+        border-bottom:5px solid aquamarine;
+    }
+</style>
+<div class="container">
+    <div class="row">
+        <table class="table-bordered col-sm-12">
+            <thead style="background-color:aquamarine">
+                <tr>
+                    <th class="col-sm-1" style="border-color:aquamarine">Col 1<br />Sub 1<br />Sub 2<br />Sub 3</th>
+                    <th class="col-sm-2" style="border-color:aquamarine">Col 2</th>
+                    <th class="col-sm-2" style="border-color:aquamarine">Col 3</th>
+                    <th class="col-sm-2" style="border-color:aquamarine">Col 4</th>
+                    <th class="col-sm-2" style="border-color:aquamarine">Col 5</th>
+                    <th class="col-sm-2" style="border-color:aquamarine;text-align:left;" colspan="2">Col 6<br />Sub 1<br />Sub 2<br />Sub 3</th>
+                    @*<th class="col-sm-1">Col 7<br />Sub 1<br />Sub 2<br />Sub 3</th>*@
+                </tr>
+            </thead>
+            <tbody style="border-left:8px solid aquamarine">
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+                    <td class="col-sm-2" style="border-bottom:12px solid aquamarine" rowspan="4">Content1</td>
+                    <td class="col-sm-2" style="border-bottom:12px solid aquamarine" rowspan="4">Content1</td>
+                    <td class="col-sm-2" style="border-bottom:12px solid aquamarine" rowspan="4">Content1</td>
+                    <td class="col-sm-2" style="border-bottom:12px solid aquamarine" rowspan="4">Content1</td>
+                    <td class="col-sm-1">Content11</td>
+                    <td class="col-sm-1">Content12</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+                    <td class="col-sm-1" colspan="2">Content11</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+
+                    <td class="col-sm-1" colspan="2">Content11</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1" style="border-bottom:12px solid aquamarine">Content1</td>
+                    <td class="col-sm-1" style="border-bottom:12px solid aquamarine" colspan="2">Content11</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+                    <td class="col-sm-2" style="border-bottom:8px solid aquamarine" rowspan="4">Content1</td>
+                    <td class="col-sm-2" style="border-bottom:8px solid aquamarine" rowspan="4">Content1</td>
+                    <td class="col-sm-2" style="border-bottom:8px solid aquamarine" rowspan="4">Content1</td>
+                    <td class="col-sm-2" style="border-bottom:8px solid aquamarine" rowspan="4">Content1</td>
+                    <td class="col-sm-1">Content11</td>
+                    <td class="col-sm-1">Content12</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+                    <td class="col-sm-1" colspan="2">Content11</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+                    <td class="col-sm-1" colspan="2">Content11</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1" style="border-bottom:8px solid aquamarine">Content1</td>
+                    <td class="col-sm-1" style="border-bottom:8px solid aquamarine" colspan="2">Content11</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+                    <td class="col-sm-2" rowspan="4">Content1</td>
+                    <td class="col-sm-2" rowspan="4">Content1</td>
+                    <td class="col-sm-2" rowspan="4">Content1</td>
+                    <td class="col-sm-2" rowspan="4">Content1</td>
+                    <td class="col-sm-1">Content11</td>
+                    <td class="col-sm-1">Content12</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+                    <td class="col-sm-1" colspan="2">Content11</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+                    <td class="col-sm-1" colspan="2">Content11</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">Content1</td>
+                    <td class="col-sm-1" colspan="2">Content11</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
