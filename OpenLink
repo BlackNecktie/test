@@ -1,0 +1,89 @@
+<div class="row " style="height:10%;">
+    <div class="col-sm-12 detailFooter" style="background-color:#00a7ed;padding-top:5px;">
+
+        <table class="col-sm-12 ">
+            <tbody>
+                @{ 
+                    var ope = (List<LinkModel>)ViewData["LinkModel"];
+                    var openLink_count = ope.Count;
+                    //var openLink_row=
+                }
+                @for (int i = 0; i < openLink_count; i++)
+                {
+                   <tr>
+                        @for (int y = 1; y <= 3; y++)
+                        {
+                           <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">ข้อมูลกรมธรรม์</a></td>
+                        }
+                   </tr>
+                }
+            </tbody>
+            @*<tbody>
+                <tr>
+                    <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">ข้อมูลกรมธรรม์</a></td>
+                    <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">สินไหมทดแทน</a></td>
+                    <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">กิจกรรม BLA Happy Life Club</a></td>
+                </tr>
+                <tr>
+                    <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">การชำระเบี้ยประกัน</a></td>
+                    <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">ข้อมูลผลิตภัณฑ์</a></td>
+                    <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">กิจกรรม สื่อสารองค์กร</a></td>
+                </tr>
+                <tr>
+                    <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">การเปลี่ยนแปลงแก้ไขกรมธรรม์</a></td>
+                    <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">สาขาและแผนที่</a></td>
+                    <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink(this)" style="color:white;">โรงพยาบาลคู่สัญญา</a></td>
+                </tr>
+            </tbody>*@
+        </table>
+    </div>
+</div>
+
+
+
+private void GetOpenLink()
+        {
+            string xmlData = HttpContext.Server.MapPath("~/XMLFiles/Website.xml");
+            System.Data.DataSet ds = new System.Data.DataSet();
+            ds.ReadXml(xmlData);
+            var linkModel = (from e in ds.Tables[0].AsEnumerable()
+                             select new LinkModel
+                             {
+                                 SiteName = e[0].ToString(),
+                                 Url = e[1].ToString()
+                             }).ToList();
+            ViewData["LinkModel"] = linkModel;
+        }
+
+
+<?xml version="1.0" encoding="utf-8" ?>
+<LinkModel>
+  <site>
+    <SiteName>ข้อมูลกรมธรรม์</SiteName>
+    <Url>http://www.bangkoklife.com/index.html</Url>
+  </site>
+  <site>
+    <SiteName>การชำระเบี้ยประกัน</SiteName>
+    <Url>http://www.bangkoklife.com/Corporate/th/PersonalCustomers/PremiumPayment</Url>
+  </site>
+  <site>
+    <SiteName>การเปลี่ยนแปลงแก้ไขกรมธรรม์</SiteName>
+    <Url>http://www.bangkoklife.com/Corporate/th/PersonalCustomers/Get/31</Url>
+  </site>
+  <site>
+    <SiteName>สินไหมทดแทน</SiteName>
+    <Url>http://www.bangkoklife.com/corporate/th/PersonalCustomers/Amercement</Url>
+  </site>
+  <site>
+    <SiteName>ข้อมูลผลัตภัณฑ์</SiteName>
+    <Url>http://www.bangkoklife.com/th/products</Url>
+  </site>
+  <site>
+    <SiteName>สาขาและแผนที่</SiteName>
+    <Url>http://www.bangkoklife.com/th/contact/branches</Url>
+  </site>
+  <site>
+    <SiteName>กิจกรรม BLA Happy Life Club</SiteName>
+    <Url>http://www.bangkoklife.com/HappyLifeClub/th/happylife_club/1</Url>
+  </site>
+</LinkModel>
