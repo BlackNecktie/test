@@ -1,0 +1,125 @@
+
+@{
+    ViewBag.Title = "Index4";
+}
+
+
+<div class="container-fluid" style="background-color:cornflowerblue">
+        <div class="row" id="firstrow" style="padding-top:5px;">
+            <div class="col-sm-2" style="background-color:royalblue;">
+                <div class="row" style="">
+                    <div class="panel" style="background-color:Highlight">
+                        <div class="panel-body">
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>1111</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1111</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1111</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1111</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-body" style="background-color:cornflowerblue">
+                            <input type="text" class="form-control" />
+                            <input type="text" class="form-control" />
+                            <input type="text" class="form-control" />
+                            <input type="text" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-10">
+                <div class="row" style="background-color:cadetblue">
+                    <div class="col-sm-1">
+                        <label>เลขที่กรมธรรม์</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" />
+                    </div>
+                    <div class="col-sm-1">
+                        <label>เลขที่กรมธรรม์2</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" />
+                    </div>
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-2"></div>
+                    <div class="col-sm-1">
+                        <input type="button" class="btn" value="Search" />
+                    </div>
+                </div>
+                <div class="row">
+
+                </div>
+                <div class="row" style="background-color:white">
+                    <table id="classTable">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="background-color:cadetblue">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-3">
+                <select class="selectpicker input-group">
+                    <option>Mustard</option>
+                    <option>Ketchup</option>
+                    <option>Relish</option>
+                </select>
+                <select class="selectpicker input-group">
+                    <option>Mustard</option>
+                    <option>Ketchup</option>
+                    <option>Relish</option>
+                </select>
+                <select class="selectpicker input-group">
+                    <option>Mustard</option>
+                    <option>Ketchup</option>
+                    <option>Relish</option>
+                </select>
+            </div>
+            <div class="col-sm-3">
+                <textarea class="form-control"></textarea>
+            </div>
+            <div class="col-sm-3">
+                <textarea class="form-control"></textarea>
+            </div>
+            <div class="col-sm-1">
+                <input type="button" class="form-control" value="Save" />
+            </div>
+        </div>
+</div>
+
+<script>
+    $('#classTable').DataTable({
+        "scrollY": "400px"
+    });
+    $(function () {
+        debugger;
+        var height = $('#firstrow')[0].offsetHeight;
+        //$('#classTable').css('height', height);
+    })
+</script>
+
