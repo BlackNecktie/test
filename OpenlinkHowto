@@ -1,0 +1,53 @@
+@using BootstrapTutorial.Models
+@{
+    ViewBag.Title = "Index3";
+}
+
+<h2>Index3</h2>
+
+<div class="row " style="height:10%;">
+    <div class="col-sm-12 detailFooter" style="background-color:#00a7ed;padding-top:5px;">
+
+        <table class="col-sm-12 ">
+            <tbody>
+                @{
+                    var ope = (List<LinkModel>)ViewData["LinkModel"];
+                    var openLink_count = ope.Count;
+                    //var openLink_row=
+                    bool IsContinue = true;
+                    int currentItem = 0;
+                    int column = 1;
+                }
+                @while (IsContinue)
+                {
+                    column = 1;
+                    <tr>
+                        @while (column <= 3)
+                        {
+                            <td class="col-sm-4" style="padding-top:7px;"><a href="#" onclick="OpenLink('@ope[currentItem].URL')" style="color:white;">@ope[currentItem].SiteName</a></td>
+                            if (currentItem + 1 < openLink_count)
+                            {
+                                currentItem++;
+                                if (column <= 3)
+                                {
+                                    column++;
+                                }
+                            }
+                            else
+                            {
+                                IsContinue = false;
+                                break;
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    function OpenLink(url) {
+        debugger;
+        window.open(url, '_blank', 'fullscreen=no');
+    }
+</script>
