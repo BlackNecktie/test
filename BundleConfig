@@ -1,0 +1,63 @@
+using System.Web;
+using System.Web.Optimization;
+
+namespace CallCenterExternal.App_Start
+{
+    public class BundleConfig
+    {
+        // For more information on bundling, visit http://go.microsoft.com/fwlink/?LinkId=301862
+        public static void RegisterBundles(BundleCollection bundles)
+        {
+            bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
+                        "~/Scripts/jquery-{version}.js",
+                        "~/Scripts/jquery.maskedinput.min.js"));
+
+            bundles.Add(new ScriptBundle("~/bundles/jquery_Old").Include(
+                        "~/Scripts/jquery-1.11.3.min.js",
+                      "~/Scripts/jquery.maskedinput.min.js"));
+
+            bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
+                        "~/Scripts/jquery.validate*"));
+
+            // Use the development version of Modernizr to develop with and learn from. Then, when you're
+            // ready for production, use the build tool at http://modernizr.com to pick only the tests you need.
+            bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
+                        "~/Scripts/modernizr-*"));
+
+            bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
+                      "~/Scripts/bootstrap.js",
+                      "~/Scripts/respond.js",
+                      "~/Scripts/jquery.fancybox.js",
+                      "~/js/sweetalert.min.js",
+                      "~/Scripts/html5shiv.js"));
+
+            bundles.Add(new StyleBundle("~/Content/css").Include(
+                      "~/Content/bootstrap.css",
+                      "~/Content/Site.css",
+                      //"~/css/core.css",
+                      "~/css/bootstrap.css",
+                      "~/css/callcenter.css",
+                      "~/css/jquery.jscrollpane.css",
+                      //"~/Content/bootstrap_custom.css",
+                      "~/css/sweetalert.css",
+                      "~/Content/jquery.fancybox.css"
+                      ));
+
+            bundles.Add(new StyleBundle("~/Content/cssPopup").Include(
+                      //"~/Content/bootstrap.css",
+                      "~/Content/site.css",
+                      "~/css/core.css",
+                      "~/css/bootstrap.css",
+                      "~/css/callcenter.css",
+                      "~/css/jquery.jscrollpane.css",
+                      "~/Content/bootstrap_custom.css",
+                      "~/css/sweetalert.css",
+                      "~/Content/jquery.fancybox.css"
+                      ));
+        }
+    }
+}
+
+
+@Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
