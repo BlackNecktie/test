@@ -1,0 +1,31 @@
+[HttpPost]
+        public JsonResult SendMail(string email, string topic, string story)
+        {
+            try
+            {
+                LetterServiceWcfSvc.LetterServiceClient client = new LetterServiceWcfSvc.LetterServiceClient();
+                LetterServiceWcfSvc.Mail mail = new LetterServiceWcfSvc.Mail();
+                LetterServiceWcfSvc.ProcessResult prMail = new LetterServiceWcfSvc.ProcessResult();
+                mail.From = "callcenter@bangkoklife.com";
+                mail.Subject = topic;
+                string[] emails = { email };
+                mail._IsBodyHtml = true;
+                mail._Encoding = LetterServiceWcfSvc.MailEncoding.Windows874;
+                mail.To = emails;
+                mail.AttachFileCollection = null;
+                mail.Body = story;
+                prMail = client.SendMail(mail);
+
+                if (prMail.Successed == false)
+                {
+                    return jsonReturn(false, prMail.ErrorMessage);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return jsonReturn(false, ex.Message);
+            }
+
+            return jsonReturn(true, "");
+        }
