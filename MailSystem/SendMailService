@@ -1,0 +1,66 @@
+public ITUtility.ProcessResult SendMail(Mail mail)
+        {
+            ITUtility.ProcessResult processResult = new ProcessResult();
+            try
+            {
+                MailMessage mMsg = new MailMessage();
+                mMsg.Body = mail.Body;
+                switch (mail.Encoding)
+                {
+                    case MailEncoding.Windows874:
+                        mMsg.BodyEncoding = Encoding.GetEncoding("windows-874");
+                        break;
+                    default:
+                        mMsg.BodyEncoding = Encoding.UTF8;
+                        break;
+                }
+                if (mail.From == null || mail.From.Trim() == "")
+                    throw new Exception("ไมได้ระบุผู้ส่ง");
+                mMsg.From = new MailAddress(mail.From);
+                if (mail.To == null || mail.To.Count() == 0)
+                    throw new Exception("ไม่ได้ระบุผู้รับ");
+                foreach (string to in mail.To)
+                {
+                    mMsg.To.Add(new MailAddress(to));
+                }
+
+                #region เพิ่มข้อมูล CC
+                if (mail.Cc != null)
+                {
+                    foreach (string cc in mail.Cc)
+                    {
+                        mMsg.CC.Add(new MailAddress(cc));
+                    }
+                }
+                #endregion
+
+                #region เพิ่มข้อมูล Attachment
+                if (mail.AttachFileCollection != null)
+                    foreach (DataFile file in mail.AttachFileCollection)
+                        mMsg.Attachments.Add(new Attachment(new MemoryStream(file.FileData), file.FileName, file.ContentType));
+                #endregion
+
+                mMsg.IsBodyHtml = mail.IsBodyHtml;
+                mMsg.Subject = mail.Subject;
+                mMsg.SubjectEncoding = mMsg.BodyEncoding;
+
+                SmtpClient client = new SmtpClient();
+                //client.Host = "smtp.google.com";
+                //client.Port = 25;
+                //client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                //client.UseDefaultCredentials = false;
+                client.Host = Utility.AppSettings("smtpServer");
+                client.Port = int.Parse(Utility.AppSettings("smtpPort"));
+                client.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
+                client.Send(mMsg);
+
+                processResult.ErrorMessage = null;
+                processResult.Successed = true;
+            }
+            catch (Exception ex)
+            {
+                processResult.ErrorMessage = ex.Message;
+                processResult.Successed = false;
+            }
+            return processResult;
+        }
