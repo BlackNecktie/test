@@ -1,0 +1,69 @@
+function ExportFile() {
+        //ShowLoading(true);
+        var startDate = "?startDate=" + startDate_global;
+        var endDate = "&endDate=" + endDate_global;
+        var appNo = "&appNo=" + appNo_global;
+        var tempPaymentNo = "&tempPaymentNo=" + tempPaymentNo_global;
+        var policyNo = "&policyNo=" + policyNo_global;
+        var url = '@Url.Action("GetDateToExportFile", "Home")' + startDate + endDate + appNo + tempPaymentNo + policyNo;
+
+        $.fileDownload(url, {
+            successCallback: function (url) {
+                //ShowLoading(false);
+            },
+            failCallback: function (responseHtml, url, data) {
+                //ShowLoading(false);
+                swal('กรุณาลงชื่อเข้าใช้');
+            }
+        });
+        //window.open(url, '_blank');
+       // ShowLoading(false);
+    }
+
+public ActionResult GetDateToExportFile()
+        {
+            var startDate = Request["startDate"];
+            var endDate = Request["endDate"];
+            var appNo = Request["appNo"];
+            var tempPaymentNo = Request["tempPaymentNo"];
+            var policyNo = Request["policyNo"];
+            ProcessResult pr = new ProcessResult();
+            SmartSuitesSvc.SmartSuites_SvcClient client = new SmartSuitesSvc.SmartSuites_SvcClient();
+            SmartSuitesSvc.TEMP_PAYMENT_LIST_Report dataObjects = null;
+
+            DateTime? startDate_str = dateTimeToString(startDate, "EU", false);
+            DateTime? endDate_str = dateTimeToString(endDate, "EU", true);
+
+            pr = client.GET_TEMP_PAYMENT_LIST_Report(out dataObjects, startDate_str, endDate_str, appNo, tempPaymentNo, policyNo);
+            if (pr.Successed)
+            {
+                //dataObjects.Header = new SmartSuitesSvc.TEMP_PAYMENT_LIST_Header();
+                //dataObjects.Header.Startdate = startDate;
+                //dataObjects.Header.EndDate = endDate;
+
+                TempPaymentListReport Report = new TempPaymentListReport(dataObjects);
+                return sendFile(Report, "รายงานการใช้ใบรับเงินชั่วคราว.xlsx", "EXCEL");
+            }
+            return null;
+        }
+       
+private FileContentResult sendFile(XtraReport Report,string filename,string type)
+        {
+            FileContentResult fileContent = null;
+            MemoryStream stream = new MemoryStream();
+            byte[] fileByte = null;
+            switch (type)
+            {
+                case "EXCEL":
+                    Report.ExportToXlsx(stream);
+                    fileByte = stream.ToArray();
+                    fileContent = File(fileByte, "application/xlsx", filename);
+                    break;
+                default:
+                    Report.ExportToXlsx(stream);
+                    fileByte = stream.ToArray();
+                    fileContent = File(fileByte, "application/xlsx", filename);
+                    break;
+            }
+            return fileContent;
+        }
