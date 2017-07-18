@@ -1,0 +1,90 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Text;
+
+namespace LetterService
+{
+    [DataContract]
+    public class Mail
+    {
+        private string[] _To;
+
+        [DataMember]
+        public string[] To
+        {
+            get { return _To; }
+            set { _To = value; }
+        }
+        private string[] _Cc;
+
+        [DataMember]
+        public string[] Cc
+        {
+            get { return _Cc; }
+            set { _Cc = value; }
+        }
+        private string _From;
+
+        [DataMember]
+        public string From
+        {
+            get { return _From; }
+            set { _From = value; }
+        }
+        private string _Subject;
+
+        [DataMember]
+        public string Subject
+        {
+            get { return _Subject; }
+            set { _Subject = value; }
+        }
+        private string _Body;
+
+        [DataMember]
+        public string Body
+        {
+            get { return _Body; }
+            set { _Body = value; }
+        }
+
+        [DataMember]
+        private MailEncoding _Encoding;
+
+        public MailEncoding Encoding
+        {
+            get { return _Encoding; }
+            set { _Encoding = value; }
+        }
+
+        [DataMember]
+        private bool _IsBodyHtml;
+
+        public bool IsBodyHtml
+        {
+            get { return _IsBodyHtml; }
+            set { _IsBodyHtml = value; }
+        }
+
+        private ITUtility.DataFileCollection _AttachFileCollection;
+
+        [DataMember]
+        public ITUtility.DataFileCollection AttachFileCollection
+        {
+            get { return _AttachFileCollection; }
+            set { _AttachFileCollection = value; }
+        }
+    }
+
+    [DataContract]
+    public enum MailEncoding
+    {
+        [EnumMember]
+        Windows874,
+        [EnumMember]
+        UTF8
+    }
+}
