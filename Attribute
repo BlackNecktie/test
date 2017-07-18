@@ -1,0 +1,195 @@
+using CallCenterExternal.CallCenterExternalWcfSvc;
+using ITUtility;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Routing;
+
+namespace CallCenterExternal.Controllers
+{
+    public class AccountController : Controller
+    {
+        #region app login
+        private bool checkUserSession()
+        {
+            if (Session["N_USERID"] == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+
+        }
+        public bool CheckUserSession()
+        {
+            
+            return checkUserSession();
+        }
+        public ActionResult signout()
+        {
+            Session.Clear();
+            return RedirectToAction("Signin");
+        }
+
+        #endregion
+
+        // GET: Account
+
+        public ActionResult Signin()
+        {
+            TimeSpan start; //10 o'clock
+            TimeSpan end; //12 o'clock
+            GetTimeLogin(out start, out end);
+            ViewBag.AlertMessage = "สามารถเข้าใช้งานระบบในช่วงเวลา " + start + "-" + end + " เท่านั้น";
+            return View();
+        }
+        public ActionResult Error401()
+        {
+            return View();
+        }
+
+        /*
+        public ActionResult Menu()
+        {
+            if (checkUserSession())
+            {
+                return View();
+            }
+            else
+            {
+                string host = Request.Url.Host;
+                if (host.Equals("localhost"))
+                {
+                    return RedirectToAction("Error401");
+                }
+                else
+                {
+                    return RedirectToAction("Error401");
+                }
+            }
+        }
+        */
+
+        [HttpPost]
+        public ActionResult viladateUser(string usernameValue, string passwordValue)
+        {
+            try
+            {
+                bool flg = false;
+                TimeSpan start; //10 o'clock
+                TimeSpan end; //12 o'clock
+                GetTimeLogin(out start, out end);
+                TimeSpan now = DateTime.Now.TimeOfDay;
+                if ((now >= start) && (now <= end))
+                {
+                    flg = true;
+                }
+                if (!flg)
+                {
+                    throw new Exception("ไม่อยู่ในช่วงเวลาที่สามารถเข้าใช้ระบบได้ กรุณา Login ในเวลา "+ start +"-"+end);
+                }
+                if (string.IsNullOrEmpty(usernameValue) == false &&
+                    string.IsNullOrEmpty(passwordValue) == false)
+                {
+                    using (CallCenterExternalSvcClient service = new CallCenterExternalSvcClient())
+                    {
+                        ZTB_EXT_USER user = null;
+                        ProcessResult process;
+
+                        process = service.viladateUserExternal(out user, usernameValue, passwordValue);
+
+                        if (process.Successed == true && user != null)
+                        {
+                            Session["N_USERID"] = user.USER_ID.ToString();
+                            Session["NAME"] = user.PRENAME + user.NAME + "  " + user.SURNAME + "   (" + user.USER_ID + ")";
+
+                            return RedirectToAction("index","Home");
+                        }
+                        else
+                        {
+                            TempData["msg"] = "username หรือ password ไม่ถูกต้อง";
+                            return RedirectToAction("Signin");
+                        }
+                    }
+                }
+                else
+                {
+                    TempData["msg"] = "username หรือ password ไม่ถูกต้อง";
+                    return RedirectToAction("Signin");
+                }
+            }
+            catch (Exception ex)
+            {
+                //TempData["msg"] = ex.Message.ToString();
+                TempData["msg"] = ex.Message;
+                return RedirectToAction("Signin");
+            }
+
+        }
+
+        private void GetTimeLogin(out TimeSpan TimeSt ,out TimeSpan TimeEnd)
+        {
+            TimeSt = new TimeSpan(07, 0, 0); //10 o'clock
+            TimeEnd = new TimeSpan(23, 0, 0); //10 o'clock
+            string xmlData = HttpContext.Server.MapPath("~/XMLFiles/ConfigSite.xml");
+            System.Data.DataSet ds = new System.Data.DataSet();
+            ds.ReadXml(xmlData);
+            DataRow resultSt = null,resultEnd = null;
+            if (ds.Tables["TimeSpan"] != null)
+            {
+                resultSt = (from e in ds.Tables["TimeSpan"].AsEnumerable()
+                          select e).FirstOrDefault();
+                if (resultSt != null && resultSt.ItemArray != null)
+                {
+                    //ViewBag.PremiumPayment = resultSt.ItemArray[1];
+                    string[] ts = resultSt.ItemArray.FirstOrDefault().ToString().Split(':'); ;
+                    TimeSt = new TimeSpan(Convert.ToInt16(ts[0]), Convert.ToInt16(ts[1]), Convert.ToInt16(ts[2])); //10 o'clock
+                }
+
+                resultEnd = (from e in ds.Tables["TimeSpan"].AsEnumerable()
+                            select e).LastOrDefault();
+                if (resultEnd != null && resultEnd.ItemArray != null)
+                {
+                    string[] ts = resultEnd.ItemArray.FirstOrDefault().ToString().Split(':'); ;
+                    TimeEnd = new TimeSpan(Convert.ToInt16(ts[0]), Convert.ToInt16(ts[1]), Convert.ToInt16(ts[2])); //10 o'clock
+                }
+            }
+            
+        }
+
+    }
+
+    public class SessionAuthorizeAttribute : AuthorizeAttribute
+    {
+        protected override bool AuthorizeCore(HttpContextBase httpContext)
+        {
+            bool flg = false;
+            if (httpContext.Session["N_USERID"] != null)
+            {
+                flg = true;
+            }
+
+            return flg;
+        }
+
+        protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
+        {
+            //filterContext.Result = new RedirectResult("/Account/Signin");
+            //filterContext.Result = new RedirectToRouteResult(,);
+            //TempData["msg"] = "ระบบเกิดข้อผิดพลาด โปรดติดต่อผู้ดูแลระบบ";
+            
+            filterContext.Result = new RedirectToRouteResult(
+                new RouteValueDictionary
+                {
+                    { "controller", "Account" },
+                    { "action", "Signin" },
+                });
+        }
+
+    }
+}
