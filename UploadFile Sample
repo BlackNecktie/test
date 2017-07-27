@@ -1,0 +1,334 @@
+@using (Html.BeginForm(new { enctype = "multipart/form-data" }))
+            {
+                <div class="form-group">
+                    <input type="file" class="file" accept=".xlsx,.xls" style="width:400px;" name="fileuploader" />
+
+                </div>
+
+                <div class="form-group">
+                    <button type="button" id="btnUpload" class="mybtn" style="margin-left:1px;width:120px;height:34px;align-items:center" onclick="Upload()">
+                        <span class="glyphicon glyphicon-upload"></span> Upload
+                    </button>
+                </div>
+            }
+            
+----------------------------------------------------------------
+function Upload() {
+
+        var DATA = new FormData($('form')[0]);
+        if ($('#fileuploader').val() != "") {
+            $.ajax({
+                url: '@Url.Action("FileUpload", "HOME")',
+                type: 'POST',
+                data: {
+                    'fileuploader': DATA
+                },
+                async: false,
+                enctype: 'multipart/form-data',
+                processData: false,  // tell jQuery not to process the data
+                contentType: false,  // tell jQuery not to set contentType
+                success: function (result) {
+
+                    $('#bindData').empty();
+                    $('#bindData').html(result);
+                    ShowLoading(false);
+                },
+                error: function (result) {
+                    console.log(arguments);
+                    ShowLoading(false);
+                }
+            });
+        }
+        else {
+            alert('กรุณาเลือกไฟล์');
+        }
+    };
+    
+    ------------------------------------------------------------------------------------------------
+    public ActionResult FileUpload(HttpPostedFileBase fileuploader,string userName)
+        {
+            var ff = Request.Files.Count;
+            ViewBag.FILE_IMPORT_INVALIDCollection = new UploadAdvancePremiumSvc.FILE_IMPORT_INVALIDCollection();
+            try
+            {
+                UploadAdvancePremiumSvc.FILE_IMPORTCollection model = new UploadAdvancePremiumSvc.FILE_IMPORTCollection();
+                string result = "";
+                DataSet ds = new DataSet();
+                if (fileuploader != null && fileuploader.ContentLength > 0)
+                {
+                    // DataFile dd = fileuploader;
+
+
+                    string fileExtension = System.IO.Path.GetExtension(fileuploader.FileName);
+
+
+                    if (fileExtension == ".xls" || fileExtension == ".xlsx")
+                    {
+                        // extract only the filename
+                        var fileName = Path.GetFileName(fileuploader.FileName);
+
+                        string fileLocation = Server.MapPath("~/App_Data//") + fileuploader.FileName;
+                        if (System.IO.File.Exists(fileLocation))
+                        {
+                            System.IO.File.Delete(fileLocation);
+                        }
+                        var path = Path.Combine(Server.MapPath("~/App_Data"), fileName);
+                        fileuploader.SaveAs(path);
+
+                        //#region ดึงข้อมูลจาก excel
+                        //// read text file
+                        //List<FormatFile_ValueModel> liobj = new List<FormatFile_ValueModel>();
+
+                        //FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+                        //IExcelDataReader excelReader;
+
+                        //if (fileExtension == ".xlsx")
+                        //{
+                        //    //2. Reading from a OpenXml Excel file 
+                        //    //(2007 format; *.xlsx)
+                        //    excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+
+                        //}  //...
+                        //else
+                        //{
+                        //    //1. Reading from a binary Excel file 
+                        //    //('97-2003 format; *.xls)
+                        //    excelReader = ExcelReaderFactory.CreateBinaryReader(stream);
+                        //}
+                        //excelReader.IsFirstRowAsColumnNames = true;
+                        //DataSet DataResult = excelReader.AsDataSet();
+
+                        var excelFile = new ExcelQueryFactory(path);
+                        ViewData["Path"] = excelFile.FileName;
+                        //FormatFile_ValueModelCollection model = new FormatFile_ValueModelCollection();
+                        //List<FormatFile_ValueModel> f = new List<FormatFile_ValueModel>();
+                        DateTime dt = System.DateTime.Now;
+                        string dt_str = dt.ToShortDateString();
+                        ViewData["UploadDate"] = dt_str;
+                        model = ReadFile(path, dt_str, "ทดสอบ");
+
+
+                        //var mm = from e in excelFile.Worksheet<FormatFile_ValueModel>(0) select e; //เลือก worksheet อันแรก
+                        //DateTime dt = System.DateTime.Now;
+                        //string dt_str = dt.ToShortDateString();
+                        //List<FormatFile_ValueModel> m;
+                        //m = (from e in mm
+                        //     select new FormatFile_ValueModel
+                        //     {
+                        //         policy = e.policy,
+                        //         pol_yr = e.pol_yr,
+                        //         pol_lt = e.pol_lt,
+                        //         discount = e.discount,
+                        //         outstanding_advance_premium = e.outstanding_advance_premium,
+                        //         PVpremium = e.PVpremium,
+                        //         Uploader = "ทดสอบ",
+                        //         UploadDate = dt_str
+                        //     }).ToList();
+                        //model = new FormatFile_ValueModelCollection();
+                        //model.AddRange(m);
+                        #region oldCode
+                        //DataResult.tableCollection.List[1]
+
+
+                        //                                                List<TEXT_VALUE> List_TEXT_VALUE = new
+                        //                        List<Models.TEXT_VALUE>();
+                        //                        DataTable dtbl = DataResult.Tables[0];
+                        //                        var workbook = new XLWorkbook();
+                        //                        var worksheet = workbook.Worksheets.Add("Sheet");
+                        //                        var rngHeaders = worksheet.Range("A1:L1");
+
+                        //                        var Row1 = worksheet.Row(1);
+                        //                        Row1.Height = 25;
+
+                        //                        rngHeaders.Style.Fill.BackgroundColor = XLColor.PeachYellow;
+                        //                        rngHeaders.Style.Font.Bold = true;
+                        //                        int row = 1;
+                        //                        worksheet.Cell(row, 1).Value = "เลขที่เช็ค";
+                        //                        worksheet.Cell(row, 2).Value = "ชื่อบนเช็ค";
+                        //                        worksheet.Cell(row, 3).Value = "วันที่บนเช็ค";
+                        //                        worksheet.Cell(row, 4).Value = "จำนวนเงิน";
+                        //                        worksheet.Cell(row, 5).Value = "บัญชี BLA";
+                        //                        worksheet.Cell(row, 6).Value = "ปี";
+                        //                        worksheet.Cell(row, 7).Value = "ราย";
+                        //                        worksheet.Cell(row, 8).Value = "ประเภทงาน";
+                        //                        worksheet.Cell(row, 9).Value = "กรมธรรม์";
+                        //                        worksheet.Cell(row, 10).Value = "บัตรประชาชน";
+                        //                        worksheet.Cell(row, 11).Value = "เจ้าของกรมธรรม์";
+                        //                        worksheet.Cell(row, 12).Value = "ชื่อผู้รับผลประโยชน์";
+
+                        //                        row++;
+                        //                        foreach (DataRow r in dtbl.Rows)
+                        //                        {
+                        //                            if (r[0] != null)
+                        //                            {
+
+                        //                                //query หาข้อมูลจากเลขเช็ค
+                        //                                TEXT_VALUE_Collection Collection =
+                        //repository.Get_CNT_PAYMENT(r[0].ToString());
+
+                        //                                var rngBody = worksheet.Range(row, 1,
+                        //row, 12);
+                        //                                rngBody.Style.Fill.BackgroundColor =
+                        //XLColor.SkyBlue;
+                        //                                worksheet.Cell(row, 1).Value =
+                        //r[0].ToString();
+                        //                                worksheet.Cell(row, 2).Value =
+                        //r[1].ToString();
+                        //                                worksheet.Cell(row, 3).Value =
+                        //r[2].ToString();
+                        //                                worksheet.Cell(row, 4).Value =
+                        //r[3].ToString();
+                        //                                worksheet.Cell(row,
+                        //4).Style.NumberFormat.Format = "###,###,##0.00";
+                        //                                worksheet.Cell(row, 5).Value =
+                        //r[4].ToString();
+                        //                                worksheet.Cell(row, 6).Value =
+                        //r[5].ToString();
+                        //                                worksheet.Cell(row, 7).Value =
+                        //r[6].ToString();
+                        //                                worksheet.Cell(row, 8).Value =
+                        //r[7].ToString();
+                        //                                worksheet.Cell(row, 9).Value =
+                        //r[8].ToString();
+                        //                                worksheet.Cell(row, 10).Value =
+                        //r[9].ToString();
+                        //                                worksheet.Cell(row, 11).Value =
+                        //r[10].ToString();
+                        //                                worksheet.Cell(row, 12).Value =
+                        //r[11].ToString();
+
+
+
+
+
+                        //                                //วนสร้างแถวจากข้อมูลที่ query
+                        //                                int num = 1;
+                        //                                foreach (var item in Collection)
+                        //                                {
+                        //                                    TEXT_VALUE TEXT_VALUE = new
+                        //TEXT_VALUE();
+                        //                                    TEXT_VALUE.PAYMENT_ACCOUNT =
+                        //item.PAYMENT_ACCOUNT;
+                        //                                    TEXT_VALUE.PAYMENT_AMOUNT =
+                        //int.Parse(item.PAYMENT_AMOUNT).ToString("N");
+                        //                                    TEXT_VALUE.PAYMENT_DT =
+                        //item.PAYMENT_DT;
+                        //                                    TEXT_VALUE.PAYMENT_LIST =
+                        //num.ToString();
+                        //                                    TEXT_VALUE.PAYMENT_NAME =
+                        //item.PAYMENT_NAME;
+                        //                                    TEXT_VALUE.PAYMENT_NO =
+                        //item.PAYMENT_NO;
+                        //                                    TEXT_VALUE.PAYMENT_YEAR =
+                        //item.PAYMENT_YEAR;
+                        //                                    TEXT_VALUE.PAYMENT_POLICY =
+                        //item.PAYMENT_POLICY;
+                        //                                    TEXT_VALUE.PAYMENT_POLICY_NAME =
+                        //item.PAYMENT_POLICY_NAME;
+                        //                                    TEXT_VALUE.PAYMENT_BENEFIT = "";
+                        //                                    TEXT_VALUE.PAYMENT_IDCARD =
+                        //item.PAYMENT_IDCARD;
+                        //                                    if (item.PAYMENT_CATEGORY == "PM")
+                        //                                    {
+                        //                                        TEXT_VALUE.PAYMENT_CATEGORY = "งานจ่ายเงินครบกำหนดกรมธรรม์";
+                        //                                    }
+                        //                                    else if (item.PAYMENT_CATEGORY ==
+                        //"PR" || item.PAYMENT_CATEGORY == "PC" || item.PAYMENT_CATEGORY == "MP")
+                        //                                    {
+                        //                                        TEXT_VALUE.PAYMENT_CATEGORY = "งานจ่ายเงินคืนตามเงื่อนไขกรมธรรม์";
+                        //                                    }
+                        //                                    else if (item.PAYMENT_CATEGORY == "PN")
+                        //                                    {
+                        //                                        TEXT_VALUE.PAYMENT_CATEGORY = "งานจ่ายเงินบำนาญ";
+                        //                                    }
+
+                        //                                    num++;
+                        //                                    //หาผู้รับผลประโยชน์
+                        //                                    var BENEFIT =
+                        //repository.Get_BENEFIT(item.PAYMENT_POLICY_ID);
+                        //                                    int i = 1;
+                        //                                    foreach (var li in BENEFIT)
+                        //                                    {
+                        //                                        if (BENEFIT.Count() == i)
+                        //                                        {
+                        //                                            TEXT_VALUE.PAYMENT_BENEFIT += li.PAYMENT_BENEFIT;
+                        //                                        }
+                        //                                        else
+                        //                                        {
+                        //                                            TEXT_VALUE.PAYMENT_BENEFIT += li.PAYMENT_BENEFIT + ",";
+                        //                                        }
+                        //                                        i++;
+                        //                                    }
+
+
+                        //                                    row++;
+                        //                                    var rngBodyL = worksheet.Range(row,
+                        //1, row, 12);
+                        //                                    rngBodyL.Style.Fill.BackgroundColor = Color.Aquamarine;
+                        //                                    worksheet.Cell(row, 1).Value =
+                        //TEXT_VALUE.PAYMENT_NO;
+                        //                                    worksheet.Cell(row, 2).Value =
+                        //TEXT_VALUE.PAYMENT_NAME;
+                        //                                    worksheet.Cell(row, 3).Value =
+                        //TEXT_VALUE.PAYMENT_DT;
+                        //                                    worksheet.Cell(row, 4).Value =
+                        //TEXT_VALUE.PAYMENT_AMOUNT;
+                        //                                    worksheet.Cell(row,
+                        //4).Style.NumberFormat.Format = "###,###,##0.00";
+                        //                                    worksheet.Cell(row, 5).Value =
+                        //TEXT_VALUE.PAYMENT_ACCOUNT;
+                        //                                    worksheet.Cell(row, 6).Value =
+                        //TEXT_VALUE.PAYMENT_YEAR;
+                        //                                    worksheet.Cell(row, 7).Value =
+                        //TEXT_VALUE.PAYMENT_LIST;
+                        //                                    worksheet.Cell(row, 8).Value =
+                        //TEXT_VALUE.PAYMENT_CATEGORY;
+                        //                                    worksheet.Cell(row, 9).Value =
+                        //TEXT_VALUE.PAYMENT_POLICY;
+                        //                                    worksheet.Cell(row, 10).Value =
+                        //TEXT_VALUE.PAYMENT_IDCARD;
+                        //                                    worksheet.Cell(row, 11).Value =
+                        //TEXT_VALUE.PAYMENT_POLICY_NAME;
+                        //                                    worksheet.Cell(row, 12).Value =
+                        //TEXT_VALUE.PAYMENT_BENEFIT;
+
+                        //                                    List_TEXT_VALUE.Add(TEXT_VALUE);
+                        //                                }
+                        //                                row++;
+                        //                                row++;
+                        //                            }
+                        //                        }
+                        //  #endregion
+                        //                        worksheet.Columns().AdjustToContents();
+                        //  workbook.SaveAs("HelloWorld.xlsx");
+
+                        //                        using (var memoryStream = new MemoryStream())
+                        //                        {
+                        //                            Response.ContentType =
+                        //"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                        //                            Response.AddHeader("content-disposition", "attachment; filename = products.xlsx");
+
+
+                        //                                                         //workbook.SaveAs(memoryStream);
+                        //                            byte[] m_Bytes = memoryStream.ToArray();
+                        //                            Session["Export"] = m_Bytes;
+
+                        //                        }
+                        #endregion
+                    }
+                    else
+                    {
+
+                        return Json("รูปแบบไฟล์ ไม่ถูกต้อง");
+                    }
+                }
+                //return Json(true);
+                return PartialView("_Details", model);
+                
+            }
+            catch (Exception ex)
+            {
+                return Json(ex);
+            }
+
+        }
