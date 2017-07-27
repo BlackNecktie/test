@@ -332,3 +332,32 @@ function Upload() {
             }
 
         }
+    ---------------------------------------------------------------------------------------------------
+    private UploadAdvancePremiumSvc.FILE_IMPORTCollection ReadFile(string path,string uploadDate,string Uploader)
+        {
+            UploadAdvancePremiumSvc.FILE_IMPORTCollection model = new UploadAdvancePremiumSvc.FILE_IMPORTCollection();
+            var excelFile = new ExcelQueryFactory(path);
+            UploadAdvancePremiumSvc.FILE_IMPORT currentModel;
+            var worksheet = (from e in excelFile.Worksheet(0) select e).ToList();
+
+            int i = 0;
+            foreach (var item in worksheet)
+            {
+                if (string.IsNullOrEmpty(item["policy"]) || string.IsNullOrEmpty(item["pol_yr"]))
+                {
+                    continue;
+                }
+                currentModel = new UploadAdvancePremiumSvc.FILE_IMPORT();
+                currentModel.policy = lpad(item["policy"].ToString(), "0", 8); // เติม format policyNo 00000000
+                currentModel.PVpremium = item["PV premium"].ToString();
+                currentModel.pol_yr = item["pol_yr"].ToString();
+                currentModel.pol_lt = item["pol_lt"].ToString();
+                currentModel.outstanding_advance_premium = item["outstanding advance premium"].ToString();
+                currentModel.discount = item["discount"].ToString();
+                currentModel.Uploader = Uploader;
+                currentModel.UploadDate = uploadDate;
+                currentModel.seq = ++i;
+                model.Add(currentModel);
+            }
+            return model;
+        }
