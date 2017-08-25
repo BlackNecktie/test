@@ -1,0 +1,30 @@
+private string GET3(string urlClient)
+        {
+            try
+            {
+                var client = new RestClient(urlClient);
+                RestRequest request = new RestRequest(Method.GET);
+                request.RequestFormat = DataFormat.Json;
+                var response = client.Execute(request);
+                if (response.ResponseStatus == ResponseStatus.Completed)
+                {
+                    if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.BadRequest)
+                    {
+                        return response.Content;
+                    }
+                    else
+                    {
+                        new Exception(response.StatusCode.ToString());
+                    }
+                }
+                else
+                {
+                    new Exception(response.ResponseStatus.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return null;
+        }
