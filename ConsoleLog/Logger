@@ -1,0 +1,118 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleLog.Text
+{
+    public class Logger
+    {
+        private string _ErrorLogFilePath = null;
+        private string _SuccessLogFilePath = null;
+        private string _InfoLogFilePath = null;
+        private string _LogPath = null;
+        private string _DateFormat = null;
+        private bool _Prepare = false;
+        private bool _Console = false;
+
+        public Logger(string LogPath, bool ShowOnConsole, string DateFormat = "yyyyMMdd")
+        {
+            if (string.IsNullOrEmpty(LogPath))
+                throw new ArgumentNullException("LogPath");
+
+            if (string.IsNullOrEmpty(DateFormat))
+                throw new ArgumentNullException("DateFormat");
+
+            this._LogPath = LogPath;
+            this._DateFormat = DateFormat;
+            this._Console = ShowOnConsole;
+        }
+
+        public void Prepare()
+        {
+            this._ErrorLogFilePath = Path.Combine(this._LogPath, "ErrorLog");
+            this._SuccessLogFilePath = Path.Combine(this._LogPath, "SuccessLog");
+            this._InfoLogFilePath = Path.Combine(this._LogPath, "InfoLog");
+
+            CheckDirectory(this._ErrorLogFilePath);
+            CheckDirectory(this._SuccessLogFilePath);
+            CheckDirectory(this._InfoLogFilePath);
+
+            this._ErrorLogFilePath = Path.Combine(this._ErrorLogFilePath, DateTime.Now.ToString(this._DateFormat) + ".txt");
+            this._SuccessLogFilePath = Path.Combine(this._SuccessLogFilePath, DateTime.Now.ToString(this._DateFormat) + ".txt");
+            this._InfoLogFilePath = Path.Combine(this._InfoLogFilePath, DateTime.Now.ToString(this._DateFormat) + ".txt");
+
+            CheckFile(this._ErrorLogFilePath);
+            CheckFile(this._SuccessLogFilePath);
+            CheckFile(this._InfoLogFilePath);
+
+            this._Prepare = true;
+        }
+
+        public void Logging(string Message, EnumLogType LogType)
+        {
+            if (!this._Prepare)
+                Prepare();
+
+            string _LogFilePath = string.Empty;
+
+            switch (LogType)
+            {
+                case EnumLogType.Info:
+                    _LogFilePath = this._InfoLogFilePath;
+                    break;
+                case EnumLogType.Success:
+                    _LogFilePath = this._SuccessLogFilePath;
+                    break;
+                case EnumLogType.Error:
+                    _LogFilePath = this._ErrorLogFilePath;
+                    break;
+                default:
+                    throw new FormatException("LogType");
+            }
+
+            if (this._Console)
+                Console.WriteLine(Message);
+
+            using (StreamWriter SW = new StreamWriter(_LogFilePath, true))
+                SW.WriteLine(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + " " + Message);
+        }
+
+        private bool CheckDirectory(string DirectoryPath, bool AutoCreateWhenNotFound = true)
+        {
+            if (!Directory.Exists(DirectoryPath))
+            {
+                if (AutoCreateWhenNotFound) { Directory.CreateDirectory(DirectoryPath); }
+                return AutoCreateWhenNotFound;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private bool CheckFile(string FilePath, bool AutoCreateWhenNotFound = true)
+        {
+            if (!File.Exists(FilePath))
+            {
+                if (AutoCreateWhenNotFound) { File.Create(FilePath).Close(); }
+                return AutoCreateWhenNotFound;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+
+    public enum EnumLogType
+    {
+        Info = 2
+        ,
+        Success = 1
+        ,
+        Error = 0
+    }
+}
