@@ -1,0 +1,94 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace BitCoinCalculator
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void btnCalculate_Click(object sender, EventArgs e)
+        {
+            Calculate();
+        }
+        private void Calculate()
+        {
+            double Money = string.IsNullOrEmpty(txtMoney.Text) ? 0 : Convert.ToDouble(txtMoney.Text);
+            double CurrentPrice = string.IsNullOrEmpty(txtCurrentPrice.Text) ? 0 : Convert.ToDouble(txtCurrentPrice.Text);
+            double Volumns = 0;
+            double TargetPrice1 = string.IsNullOrEmpty(txtTargetPrice1.Text) ? 0 : Convert.ToDouble(txtTargetPrice1.Text);
+            double TargetPrice2 = string.IsNullOrEmpty(txtTargetPrice2.Text) ? 0 : Convert.ToDouble(txtTargetPrice2.Text);
+            double TargetPrice3 = string.IsNullOrEmpty(txtTargetPrice3.Text) ? 0 : Convert.ToDouble(txtTargetPrice3.Text);
+
+            if (Money != 0 || CurrentPrice != 0)
+            {
+                Volumns = Money / CurrentPrice;
+            }
+            Volumn.Text = Volumns.ToString();
+
+            double Result1 = getTargetPrice(Volumns, TargetPrice1);
+            double Result2 = getTargetPrice(Volumns, TargetPrice2);
+            double Result3 = getTargetPrice(Volumns, TargetPrice3);
+            txtResult1.Text = Result1.ToString();
+            txtResult2.Text = Result2.ToString();
+            txtResult3.Text = Result3.ToString();
+
+            double Profit1 = getProfit(Money, Result1);
+            double Profit2 = getProfit(Money, Result2);
+            double Profit3 = getProfit(Money, Result3);
+            txtProfit1.Text = Profit1.ToString();
+            txtProfit2.Text = Profit2.ToString();
+            txtProfit3.Text = Profit3.ToString();
+
+            txtResultFee1.Text = GetFee(Money, Profit1).ToString();
+            txtResultFee2.Text = GetFee(Money, Profit2).ToString();
+            txtResultFee3.Text = GetFee(Money, Profit3).ToString();
+
+            setColor();
+        }
+
+        private double getTargetPrice(double volumns, double targetPrice)
+        {
+            return volumns * targetPrice;
+        }
+        private double getProfit(double money, double result)
+        {
+            return result - money;
+        }
+        private double GetFee(double money, double Profit)
+        {
+            double fee = string.IsNullOrEmpty(txtFee.Text) ? 0 : Convert.ToDouble(txtFee.Text);
+            double totalFee = (money * fee) / 100;
+            return Profit - totalFee;
+        }
+        private void setColor()
+        {
+            if (txtProfit1.Text.Contains('-')) { txtProfit1.ForeColor = Color.Red; } else { txtProfit1.ForeColor = Color.Green; }
+            if (txtProfit2.Text.Contains('-')) { txtProfit2.ForeColor = Color.Red; } else { txtProfit2.ForeColor = Color.Green; }
+            if (txtProfit3.Text.Contains('-')) { txtProfit3.ForeColor = Color.Red; } else { txtProfit3.ForeColor = Color.Green; }
+            if (txtResultFee1.Text.Contains('-')) { txtResultFee1.ForeColor = Color.Red; } else { txtResultFee1.ForeColor = Color.Green; }
+            if (txtResultFee2.Text.Contains('-')) { txtResultFee2.ForeColor = Color.Red; } else { txtResultFee2.ForeColor = Color.Green; }
+            if (txtResultFee3.Text.Contains('-')) { txtResultFee3.ForeColor = Color.Red; } else { txtResultFee3.ForeColor = Color.Green; }
+        }
+
+        private void txtMoney_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Calculate();
+        }
+
+        private void txtCurrentPrice_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Calculate();
+        }
+    }
+}
