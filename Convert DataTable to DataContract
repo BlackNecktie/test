@@ -1,0 +1,64 @@
+DataTable dt = Utility.FillDataTable(sqlStr, connection);
+            dataObjects = DataConvertor.P_NAME_ID(dt);
+            
+-------------------------------------------------------------------
+public static P_NAME_ID[] P_NAME_ID(DataTable dt)
+        {
+            if (dt == null)
+                return null;
+            if (dt.Rows.Count == 0)
+                return null;
+            List<P_NAME_ID> returnList = new List<P_NAME_ID>();
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                P_NAME_ID returnElement = P_NAME_ID(dr);
+                returnList.Add(returnElement);
+            }
+            return returnList.ToArray();
+        }
+---------------------------------------------------------------------
+private static P_NAME_ID P_NAME_ID(DataRow dr)
+        {
+            P_NAME_ID returnElement = new P_NAME_ID();
+            returnElement.POLICY_ID = Utility.GetDBInt64Value(dr, "POLICY_ID");
+            returnElement.NAME_ID = Utility.GetDBInt64Value(dr, "NAME_ID");
+            returnElement.PRENAME = Utility.GetDBStringValue(dr, "PRENAME");
+            returnElement.NAME = Utility.GetDBStringValue(dr, "NAME");
+            returnElement.SURNAME = Utility.GetDBStringValue(dr, "SURNAME");
+            returnElement.IDCARD_NO = Utility.GetDBStringValue(dr, "IDCARD_NO");
+            returnElement.PASSPORT = Utility.GetDBStringValue(dr, "PASSPORT");
+            returnElement.BIRTH_DT = Utility.GetDBDateTimeValue(dr, "BIRTH_DT");
+            returnElement.SEX = Utility.GetDBCharValue(dr, "SEX");
+            returnElement.MB_PHONE = Utility.GetDBStringValue(dr, "MB_PHONE");
+            returnElement.NATIONALITY = Utility.GetDBStringValue(dr, "NATIONALITY");
+            returnElement.TMN = Utility.GetDBCharValue(dr, "TMN");
+            returnElement.TMN_DT = Utility.GetDBDateTimeValue(dr, "TMN_DT");
+            returnElement.FSYSTEM_DT = Utility.GetDBDateTimeValue(dr, "FSYSTEM_DT");
+            returnElement.UPD_DT = Utility.GetDBDateTimeValue(dr, "UPD_DT");
+            returnElement.UPD_ID = Utility.GetDBStringValue(dr, "UPD_ID");
+            return returnElement;
+        }
+----------------------------------------------------------------------------------------------
+public static long? GetDBInt64Value(DataRow dr, string fieldName)
+        {
+            if (!DataRowHasValue(dr, fieldName))
+                return null;
+            return GetDBInt64Value(dr[fieldName]);
+        }
+------------------------------------------------------------------------------------------
+public static bool DataRowHasValue(DataRow dr, string columnName)
+        {
+            if (dr == null || !dr.Table.Columns.Contains(columnName) || dr.IsNull(columnName))
+                return false;
+            return true;
+        }
+--------------------------------------------------------------------------------------------
+public static long? GetDBInt64Value(object input)
+        {
+            if (input.IsNullOrDBNull())
+                return null;
+            if (!input.IsNumeric())
+                return null;
+            return Convert.ToInt64(input);
+        }
