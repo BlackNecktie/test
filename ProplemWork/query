@@ -102,3 +102,43 @@ public override void GetCONTACT_TYPE_REPORT(out List<CONTACT_TYPE_DETAILs_REPORT
                 throw ex;
             }
         }
+
+
+-------------------------------------------------------------------------------------------------------------------------
+select case 'C' when 'C' then 'ลูกค้า'
+                                       when 'P' then 'ผู้ปกครอง'
+                                       when 'A' then 'ตัวแทน' 
+                                       when 'O' then 'บุคคลอื่นๆ' 
+                                       when 'S' then 'เจ้าหน้าที่' 
+                                       when 'B' then 'ผู้รับผลประโยชน์' 
+                                       else 'อื่นๆ'
+                                       end
+                                as TITLE ,case when CE.RELATION is null then --'อื่นๆ' 
+            case 'C' when 'C' then 'ลูกค้า'
+                    when 'P' then 'ผู้ปกครอง'
+                    when 'A' then 'ตัวแทน' 
+                    when 'O' then 'บุคคลอื่นๆ' 
+                    when 'S' then 'เจ้าหน้าที่' 
+                    when 'B' then 'ผู้รับผลประโยชน์' 
+                    else 'อื่นๆ'
+                    end
+            else CE.RELATION end  as RELATION,count(CE.CASE_ID) as RELATIONCOUNT,case when COUNT(CE.CASE_ID) = 0 then 0 else ROUND(100*(COUNT(CE.CASE_ID) / SUM(COUNT(CE.CASE_ID)) OVER()),2) end AS PERC
+                                from POLICY.CC_CASE CE
+                                where CE.CASE_CS_TYPE = 'C' and 
+                                ce.userid='002999' AND 
+                                trunc(CE.CASE_DT) between to_date('15/12/2016','dd/MM/yyyy') and to_date('21/09/2017','dd/MM/yyyy')
+                                group by CE.RELATION
+                                union
+                                select case 'C' when 'C' then 'ลูกค้า'
+                                       when 'P' then 'ผู้ปกครอง'
+                                       when 'A' then 'ตัวแทน' 
+                                       when 'O' then 'บุคคลอื่นๆ' 
+                                       when 'S' then 'เจ้าหน้าที่' 
+                                       when 'B' then 'ผู้รับผลประโยชน์' 
+                                       else 'อื่นๆ'
+                                       end
+                                       as TITLE,'ทั้งหมด' as RELATION,count(CE.CASE_ID) as RELATIONCOUNT,case when COUNT(CE.CASE_ID) = 0 then 0 else ROUND(100*(COUNT(CE.CASE_ID) / SUM(COUNT(CE.CASE_ID)) OVER()),2) end AS PERC
+                                from POLICY.CC_CASE CE
+                                where CE.CASE_CS_TYPE = 'C' and  
+                                ce.userid='002999' AND 
+                                trunc(CE.CASE_DT) between to_date('15/12/2016','dd/MM/yyyy') and to_date('21/09/2017','dd/MM/yyyy');
