@@ -1,0 +1,40 @@
+[DataContract]
+    public class CONTACT_TYPE_SUB_LVL_MAIN
+    {
+        [DataMember]
+        public string TITLE { get; set; }
+        [DataMember]
+        public string StartDate { get; set; }
+        [DataMember]
+        public string EndDate { get; set; }
+        [DataMember]
+        public string CurrentDate { get; set; }
+        [DataMember]
+        public string UserName { get; set; }
+        [DataMember]
+        public string UserID { get; set; }
+        [DataMember]
+        public string User { get; set; }
+        [DataMember]
+        public List<CONTACT_TYPE_SUB_LVL_SUB> CONTACT_TYPE_SUB_LVL_SUB { get; set; }
+    }
+    [DataContract]
+    public class CONTACT_TYPE_SUB_LVL_SUB
+    {
+        [DataMember]
+        public string TITLE_SUB { get; set; }
+        [DataMember]
+        public List<CONTACT_TYPE_SUB_LVL_SUB_SUB> CONTACT_TYPE_SUB_LVL_SUB_SUB { get; set; }
+    }
+    [DataContract]
+    public class CONTACT_TYPE_SUB_LVL_SUB_SUB
+    {
+        [DataMember]
+        public string TITLE { get; set; }
+        [DataMember]
+        public string RELATION { get; set; }
+        [DataMember]
+        public string RELATIONCOUNT { get; set; }
+        [DataMember]
+        public string PERC { get; set; }
+    }
