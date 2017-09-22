@@ -1,0 +1,65 @@
+public void GetCONTACT_TYPE_REPORT(out CONTACT_TYPE_SUB_LVL_MAIN dataObject, DateTime? startDate, DateTime? endDate, string user_id, string userName)
+        {
+            RepositoryBase repository = new Repository();
+            ProcessResult pr = new ProcessResult();
+            string[] case_cs_type_arr = { "C", "P", "A", "O", "S", "B" };
+            List<CONTACT_TYPE_DETAILs_REPORT> CONTACT_TYPE_DETAILs_REPORT_temp;
+            CONTACT_TYPE_DETAIL_REPORT data;
+            dataObject = new CONTACT_TYPE_SUB_LVL_MAIN { CONTACT_TYPE_SUB_LVL_SUB = new List<CONTACT_TYPE_SUB_LVL_SUB>() };
+            List<CONTACT_TYPE_SUB_LVL_SUB> subList = new List<CONTACT_TYPE_SUB_LVL_SUB>();
+            //  CONTACT_TYPE_SUB_LVL_SUB sub = new CONTACT_TYPE_SUB_LVL_SUB { CONTACT_TYPE_SUB_LVL_SUB_SUB = new List<CONTACT_TYPE_SUB_LVL_SUB_SUB>() };
+            List<CONTACT_TYPE_SUB_LVL_SUB_SUB> subsubList = new List<CONTACT_TYPE_SUB_LVL_SUB_SUB>();
+
+            try
+            {
+                CONTACT_TYPE_DETAIL_REPORT dataObjecttemp = new CONTACT_TYPE_DETAIL_REPORT { CONTACT_TYPE_DETAILs_REPORT = new List<CONTACT_TYPE_DETAILs_REPORT>() };
+                dataObjecttemp.CONTACT_TYPE_DETAILs_REPORT = new List<CONTACT_TYPE_DETAILs_REPORT>();
+                CONTACT_TYPE_DETAILs_REPORT_temp = new List<CONTACT_TYPE_DETAILs_REPORT>();
+                repository.GetCONTACT_TYPE_REPORT(out CONTACT_TYPE_DETAILs_REPORT_temp, null, startDate, endDate, user_id);
+
+                foreach (var case_cs_type in case_cs_type_arr)
+                {
+                    switch (case_cs_type)
+                    {
+                        case "C":
+                            break;
+                        case "P":
+                            break;
+                        case "A":
+                            break;
+                        case "O":
+                            break;
+                        case "S":
+                            break;
+                        case "B":
+                            break;
+                        case "ALL":
+                            break;
+                    }
+                    //dataObject.TITLE = title;
+                    CONTACT_TYPE_SUB_LVL_SUB sub = new CONTACT_TYPE_SUB_LVL_SUB { CONTACT_TYPE_SUB_LVL_SUB_SUB = new List<CONTACT_TYPE_SUB_LVL_SUB_SUB>() };
+
+                    subsubList.Clear();
+
+                    //dataObjecttemp.CONTACT_TYPE_DETAILs_REPORT.AddRange(CONTACT_TYPE_DETAILs_REPORT_temp);
+                    foreach (var item2 in CONTACT_TYPE_DETAILs_REPORT_temp)
+                    {
+                        subsubList.Add(new CONTACT_TYPE_SUB_LVL_SUB_SUB { TITLE = item2.TITLE, RELATION = item2.RELATION, RELATIONCOUNT = item2.RELATIONCOUNT, PERC = item2.PERC });
+                    }
+                    sub.CONTACT_TYPE_SUB_LVL_SUB_SUB.AddRange(subsubList);
+                    sub.TITLE_SUB = subsubList.Select(p => p.TITLE).FirstOrDefault();
+                    subList.Add(sub);
+
+                }
+                dataObject.CONTACT_TYPE_SUB_LVL_SUB.AddRange(subList);
+                dataObject.StartDate = startDate == null ? "-" : Utility.dateTimeToString(startDate, "dd/MM/yyyy", "BU");
+                dataObject.EndDate = startDate == null ? "-" : Utility.dateTimeToString(endDate, "dd/MM/yyyy", "BU");
+                dataObject.CurrentDate = Utility.dateTimeToString(DateTime.Now, "dd/MM/yyyy", "BU");
+                dataObject.UserName = string.IsNullOrEmpty(userName) ? "-" : userName;
+                dataObject.UserID = user_id;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
