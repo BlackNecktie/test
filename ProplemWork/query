@@ -1,0 +1,104 @@
+public override void GetCONTACT_TYPE_REPORT(out List<CONTACT_TYPE_DETAILs_REPORT> dataObject, string CASE_CS_TYPE,DateTime? startDate,DateTime? endDate, string user_id)
+        {
+            //startDate = new DateTime(2016, 12, 15);
+            //endDate = new DateTime(2017, 9, 21);
+            //user_id = "003061";
+            string sql = "";
+            try
+            {
+                dataObject = new List<CONTACT_TYPE_DETAILs_REPORT>();
+                if (!string.IsNullOrEmpty(user_id))
+                {
+                    sql = string.Format(@"
+                                select case {0} when 'C' then 'ลูกค้า'
+                                       when 'P' then 'ผู้ปกครอง'
+                                       when 'A' then 'ตัวแทน' 
+                                       when 'O' then 'บุคคลอื่นๆ' 
+                                       when 'S' then 'เจ้าหน้าที่' 
+                                       when 'B' then 'ผู้รับผลประโยชน์' 
+                                       else 'อื่นๆ'
+                                       end
+                                as TITLE ,case when CE.RELATION is null then --'อื่นๆ' 
+            case {0} when 'C' then 'ลูกค้า'
+                    when 'P' then 'ผู้ปกครอง'
+                    when 'A' then 'ตัวแทน' 
+                    when 'O' then 'บุคคลอื่นๆ' 
+                    when 'S' then 'เจ้าหน้าที่' 
+                    when 'B' then 'ผู้รับผลประโยชน์' 
+                    else 'อื่นๆ'
+                    end
+            else CE.RELATION end  as RELATION,count(CE.CASE_ID) as RELATIONCOUNT,case when COUNT(CE.CASE_ID) = 0 then 0 else ROUND(100*(COUNT(CE.CASE_ID) / SUM(COUNT(CE.CASE_ID)) OVER()),2) end AS PERC
+                                from POLICY.CC_CASE CE
+                                where CE.CASE_CS_TYPE = {0} and ce.userid={1} AND trunc(CE.CASE_DT) between {2} and {3}
+                                group by CE.RELATION
+                                union
+                                select case {0} when 'C' then 'ลูกค้า'
+                                       when 'P' then 'ผู้ปกครอง'
+                                       when 'A' then 'ตัวแทน' 
+                                       when 'O' then 'บุคคลอื่นๆ' 
+                                       when 'S' then 'เจ้าหน้าที่' 
+                                       when 'B' then 'ผู้รับผลประโยชน์' 
+                                       else 'อื่นๆ'
+                                       end
+                                       as TITLE,'ทั้งหมด' as RELATION,count(CE.CASE_ID) as RELATIONCOUNT,case when COUNT(CE.CASE_ID) = 0 then 0 else ROUND(100*(COUNT(CE.CASE_ID) / SUM(COUNT(CE.CASE_ID)) OVER()),2) end AS PERC
+                                from POLICY.CC_CASE CE
+                                where CE.CASE_CS_TYPE = {0} and ce.userid={1} AND trunc(CE.CASE_DT) between {2} and {3} ",
+                        new object[]
+                        {
+                                        Utility.SQLValueString(CASE_CS_TYPE),Utility.SQLValueString(user_id), Utility.SQLValueString(startDate), Utility.SQLValueString(endDate)
+                        }
+                    );
+                }
+                else
+                {
+                    sql = string.Format(@"
+                                select case {0} when 'C' then 'ลูกค้า'
+                                       when 'P' then 'ผู้ปกครอง'
+                                       when 'A' then 'ตัวแทน' 
+                                       when 'O' then 'บุคคลอื่นๆ' 
+                                       when 'S' then 'เจ้าหน้าที่' 
+                                       when 'B' then 'ผู้รับผลประโยชน์' 
+                                       else 'อื่นๆ'
+                                       end
+                                as TITLE ,case when CE.RELATION is null then --'อื่นๆ' 
+            case {0} when 'C' then 'ลูกค้า'
+                    when 'P' then 'ผู้ปกครอง'
+                    when 'A' then 'ตัวแทน' 
+                    when 'O' then 'บุคคลอื่นๆ' 
+                    when 'S' then 'เจ้าหน้าที่' 
+                    when 'B' then 'ผู้รับผลประโยชน์' 
+                    else 'อื่นๆ'
+                    end
+            else CE.RELATION end  as RELATION,count(CE.CASE_ID) as RELATIONCOUNT,case when COUNT(CE.CASE_ID) = 0 then 0 else ROUND(100*(COUNT(CE.CASE_ID) / SUM(COUNT(CE.CASE_ID)) OVER()),2) end AS PERC
+                                from POLICY.CC_CASE CE
+                                where CE.CASE_CS_TYPE = {0} AND trunc(CE.CASE_DT) between {1} and {2}
+                                group by CE.RELATION
+                                union
+                                select case {0} when 'C' then 'ลูกค้า'
+                                       when 'P' then 'ผู้ปกครอง'
+                                       when 'A' then 'ตัวแทน' 
+                                       when 'O' then 'บุคคลอื่นๆ' 
+                                       when 'S' then 'เจ้าหน้าที่' 
+                                       when 'B' then 'ผู้รับผลประโยชน์' 
+                                       else 'อื่นๆ'
+                                       end
+                                       as TITLE,'ทั้งหมด' as RELATION,count(CE.CASE_ID) as RELATIONCOUNT,case when COUNT(CE.CASE_ID) = 0 then 0 else ROUND(100*(COUNT(CE.CASE_ID) / SUM(COUNT(CE.CASE_ID)) OVER()),2) end AS PERC
+                                from POLICY.CC_CASE CE
+                                where CE.CASE_CS_TYPE = {0} AND trunc(CE.CASE_DT) between {1} and {2} ",
+                        new object[]
+                        {
+                                        Utility.SQLValueString(CASE_CS_TYPE), Utility.SQLValueString(startDate), Utility.SQLValueString(endDate)
+                        }
+                    );
+                }
+                using (DataTable dt = Utility.FillDataTable(sql, connection))
+                {
+                    dataObject = dt.AsEnumerable<CONTACT_TYPE_DETAILs_REPORT>().ToList();
+                }
+                // CONTACT_TYPE_DETAILs_REPORT[] dt = Utility.FillDataTable<CONTACT_TYPE_DETAILs_REPORT>(sql, connection);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
