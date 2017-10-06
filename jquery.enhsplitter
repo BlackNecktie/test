@@ -1,0 +1,30 @@
+<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>    
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/enhsplitter/css/jquery.enhsplitter.css" rel="stylesheet" />
+    <script src="~/Scripts/modernizr-2.6.2.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Content/enhsplitter/js/jquery.enhsplitter.js"></script>
+----------------------------------------------------------------------------------------------------
+<div class="container">
+        <div class="row">
+            <div id="demoThree">
+                <div id="demoThreeA">
+                    @Html.Partial("_LayoutMenus")
+                </div>
+                <div id="demoThreeB">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+        <hr />
+    </div>
+
+    <script>
+    $(function () {
+        $('#demoThree').enhsplitter({ leftMinSize: 0, position: '18%',height:'700px', splitterSize: 13, handle: 'lotsofdots', fixed: true })
+    })
+    </script>
