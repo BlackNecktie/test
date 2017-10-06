@@ -22,6 +22,7 @@ $("#txtStart").datepicker({
                 var maxDate = new Date(selected.date.valueOf());
                 $('#txtStart').datepicker('setEndDate', maxDate);
             });
+//Controller
 DateTime? sd = ITUtility.Utility.StringToDateTime(startDate, "BU");
 DateTime? ed = ITUtility.Utility.StringToDateTime(endDate, "BU");
 
