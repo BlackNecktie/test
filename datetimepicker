@@ -12,3 +12,18 @@
         buttonImageOnly: true
     });
 </script>
+
+-------------------------------------------------------------------------------------------------
+endDate ไม่สามารถเลือกวันที่น้อยกว่า startDate
+ //date range
+    $('#txtStart').datepicker().on('changeDate', function (selected) {
+        startDate = new Date(selected.date.valueOf());
+        startDate.setDate(startDate.getDate(new Date(selected.date.valueOf())));
+        $('#txtEnd').datepicker('setStartDate', startDate);
+    });
+
+    $('#txtEnd').datepicker().on('changeDate', function (selected) {
+        FromEndDate = new Date(selected.date.valueOf());
+        FromEndDate.setDate(FromEndDate.getDate(new Date(selected.date.valueOf())));
+        $('#txtStart').datepicker('setEndDate', FromEndDate);
+    });
