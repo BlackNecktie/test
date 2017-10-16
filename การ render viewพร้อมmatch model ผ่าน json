@@ -1,0 +1,57 @@
+//View
+$.ajax({
+                url: '@Url.Action("SaveFile", "Home")',
+                type: 'POST',
+                //async:false,
+                data: {
+                    'path': path,
+                    'extention': extention,
+                    'uploadDate': uploadDate,
+                    'seqArrRemove': seqArrRemove,
+                    'userId': userId
+                },
+                success: function (result) {
+                    if (AlertMsg(result)) {
+                        ShowLoading(false);
+                        return;
+                    }
+                    afterSave = true;
+                    $('#bindData').empty();
+                    $('#bindData').html(result.Detail);
+
+                    $('#bindSubData').show();
+                    $('#bindSubData').empty();
+                    $('#bindSubData').html(result.subDetail);
+                    SetTitleTable('SaveFile');
+                    $('.btnRemove').attr('disabled', 'disabled');
+                    $('#spRecordValid').show();
+                    $('#spRecordInValid').show();
+                    ShowLoading(false);
+                    //swal('บันทึกข้อมูลเรียบร้อย', '', 'success');
+                },
+                error: function (err) {
+                    ShowLoading(false);
+                    afterSave = false;
+                }
+            })
+------------------------------------------------------------------------------------------------------------------------
+//Controller
+var Detail = RenderRazorViewToString("_Details", model);
+            var subDetail = RenderRazorViewToString("_SubDetails", dataObject);
+            return Json(new { Detail, subDetail });
+------------------------------------------------------------------------------------------------------------------------
+//Controller
+public string RenderRazorViewToString(string viewName, object model)
+        {
+            ViewData.Model = model;
+            using (var sw = new StringWriter())
+            {
+                var viewResult = ViewEngines.Engines.FindPartialView(ControllerContext,
+                                                                         viewName);
+                var viewContext = new ViewContext(ControllerContext, viewResult.View,
+                                             ViewData, TempData, sw);
+                viewResult.View.Render(viewContext, sw);
+                viewResult.ViewEngine.ReleaseView(ControllerContext, viewResult.View);
+                return sw.GetStringBuilder().ToString();
+            }
+        }
