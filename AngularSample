@@ -1,0 +1,40 @@
+
+angular.module('MyApp', ['ui.select2'])
+.controller('MyCtrl', function($scope) {
+    $scope.select2Options = {
+        allowClear: true
+    };
+    $scope.modelss = "";
+    $scope.select2Options = {
+        allowClear: true
+    };
+    //$.$scope.select2 = [];
+    function aa(e) {
+        debugger
+    }
+});
+
+<div class="containerIn" ng-app="MyApp" ng-controller="MyCtrl" style="">
+    <div class="tabMenuIn" id="tabSearchIn" style="padding-top:30px;">
+        <div class="row">
+            <div class="col-md-12" style="height:32px">
+                <div class="form-group-sm" style="margin-right:20px;">
+                    <select ui-select2="select2Options" ng-change="modelss" ng-model="modelss" data-placeholder="Pick a number">
+                        <option value=""></option>
+                        <option value="one">First</option>
+                        <option value="two">Second</option>
+                        <option value="three">Third</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+</div>
+
+<script type="text/javascript" src="~/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="~/bower_components/angular/angular.js"></script>
+    <script type="text/javascript" src="~/bower_components/select2/select2.js"></script>
+    <script type="text/javascript" src="~/bower_components/angular-ui-select2/src/select2.js"></script>
+    <script src="~/AngularJS/jsTest.js"></script>
