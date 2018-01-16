@@ -1,0 +1,210 @@
+
+var module = angular.module('MyApp', ['ui.select2', 'ngMaterial'])
+.controller('MyCtrl', ['$scope', '$service', '$http', function ($scope, $service, $http) {
+    $scope.txtStartDate = new Date();
+    $scope.txtEndDate = new Date();
+    $scope.cmb_channel = bindingChannel()//{ options: [{ id: '1', name: 'Option A' }, { id: '2', name: 'Option B' }, { id: '3', name: 'Option C' }] }
+    $scope.cmb_payOption = bindingPayOption()//{ options: [{ id: '1', name: 'Option A' }, { id: '2', name: 'Option B' }, { id: '3', name: 'Option C' }] }
+    $scope.txtPolicy = null;
+    $scope.txtName = null;
+    $scope.txtSurname = null;
+    $scope.txtIdcard = null;
+    $scope.cmb_channel_model = null;
+    $scope.cmb_payOption_model = null;
+    $scope.data_list = [];
+
+
+    var events_All = {
+        PayOptionOnchange: function () {
+            alert($scope.cmb_payOption_model);
+        },
+        ChannelOnchange: function () {
+            alert($scope.cmb_channel_model);
+        },
+        OnClear: function () {
+            Clear();
+        },
+        OnSearch: function () {
+            Searching();
+        }
+    };
+    $scope.events = events_All;
+
+    function bindingChannel() {
+        var dataValue = [];
+        $.ajax({
+            url: '/Home/GET_AUTB_CHANNEL_DROPDOWN_JSON',
+            type: 'GET',
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                //debugger
+                if (result.success == true) {
+
+                    //for (var i = 0; i < result.data.length; i++) {
+                    //    aa.push(result.data[i]);
+                    //}
+                    result.data.forEach(function (value, index) {
+                        dataValue.push(value);
+                    })
+                    //setTimeout(function () {
+
+                    //    result.data.forEach(function (value, index) {
+                    //        dataValue.push(value);
+                    //    })
+                    //}, 3000);
+
+                }
+            },
+            error: function (request, status, error) {
+                console.log(error);
+            }
+        })
+        return dataValue;
+    }
+    function bindingPayOption() {
+        var dataValue = [];
+        $.ajax({
+            url: '/Home/GET_ZTB_PAY_OPTION_ONLINE_DROPDOWN_JSON',
+            type: 'GET',
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                //debugger
+                if (result.success == true) {
+
+                    //for (var i = 0; i < result.data.length; i++) {
+                    //    aa.push(result.data[i]);
+                    //}
+                    result.data.forEach(function (value, index) {
+                        dataValue.push(value);
+                    })
+                    //return binding(result);
+                }
+            },
+            error: function (request, status, error) {
+                console.log(error);
+            }
+        })
+        return dataValue;
+    }
+
+    function binding(result) {
+        var dataValue = [];
+        result.data.forEach(function (value, index) {
+            dataValue.push(value);
+        })
+        return dataValue;
+
+    }
+    function Clear() {
+        alert('Clear');
+    }
+
+    $scope.Searching = function () {
+        debugger
+        var startDate = $scope.txtStartDate;
+        var endDate = $scope.txtEndDate;
+        var channal = $scope.cmb_channel_model;
+        var policy = $scope.txtPolicy;
+        var name = $scope.txtName;
+        var surname = $scope.txtSurname;
+        var idcard = $scope.txtIdcard;
+        var paymentType = $scope.cmb_payOption_model;
+        $service.Searching('/HOME/GET_MONITOR_RECURRING', $scope.txtPolicy).then(
+                function (success) {
+                    debugger
+                    $scope.data_list = success.data;
+                },
+                function (error) {
+                    if (error !== null) {
+                        alert(error);
+                    }
+
+                });
+    };
+}])
+.service('$service', function ($http, $q) {
+    return {
+        //setPolicydetail: function (url, policy) {
+        //    var deferred = $q.defer();
+
+        //    $http.post(url, {  policy: policy })
+        //     .success(function (data) {
+        //         console.log(data);
+        //         if (data.success)
+        //             deferred.resolve(data);
+        //         //else
+        //         //    deferred.reject(data);
+        //     })
+        //     .error(function (response) {
+        //         //showerror(response.message);
+        //         deferred.reject(response);
+        //     });
+        //    return deferred.promise;
+        //}
+
+        Searching: function (url, policy) {
+            var deferred = $q.defer();
+            //var result;
+            //$http.post(url, { policy: policy }, function (data) {
+            //    debugger
+            //    var da = data;
+            //    deferred.resolve(data);
+            //})
+            $.ajax({
+                url: url,
+                data: {
+                    'policy': policy
+                },
+                type: 'POST',
+                dataType: 'JSON',
+                async: 'true',
+                success: function (data) {
+                    debugger
+                    deferred.resolve(data);
+                }
+            })
+            return deferred.promise;
+        }
+    };
+});
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+ public JsonResult GET_MONITOR_RECURRING(DateTime? startDate, DateTime? endDate, string policy, string holding, string channelType, string name, string surname, string idcard, string payOption)
+        {
+            if (string.IsNullOrEmpty(CheckUSER_ID()))
+            {
+                return Json(false);
+            }
+            pr = new ProcessResult();
+            MONITOR_RECURRING_COLLECTION dataObjects = new MONITOR_RECURRING_COLLECTION();
+            try
+            {
+                using (MonitorRecurringSvcClient client = new MonitorRecurringSvcClient())
+                {
+                    try
+                    {
+                        pr = client.GET_MONITOR_RECURRING(startDate, endDate, policy, holding, channelType, name, surname, idcard, payOption, out dataObjects);
+                        client.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        client.Abort();
+                        throw ex;
+                    }
+                }
+                if (!pr.Successed)
+                {
+                    //return PartialView("");
+                }
+                //return PartialView("_MonitorRecurringDetail", dataObjects);
+                return JsonReturn(dataObjects, true);
+            }
+            catch (Exception ex)
+            {
+                //return PartialView("");
+                return Json(ex.Message);
+            }
+        }
