@@ -15,12 +15,81 @@ using System.Dynamic;
 using System.Web.Script.Serialization;
 using System.Reflection;
 using System.ComponentModel;
+using System.ServiceModel;
 
 namespace ITUtility
 {
     public static class Utility
     {
 
+        public static string ConditionInOrEqual(string whereColumn, object[] datas, List<DBParameter> param)
+        {
+            string condition, param_name = whereColumn;
+            whereColumn = whereColumn.Trim();
+            if (whereColumn.IndexOf(' ') >-1)
+            {
+                throw new Exception("ConditionInOrEqual : column " + whereColumn + " ไม่สามารถมีช่องว่างได้");
+            }
+            if (whereColumn.IndexOf(".") >-1)
+            {
+                param_name = whereColumn.Replace('.', '_');
+            }
+            if (datas.Count() > 1)
+            {
+                string sIds = "";
+                foreach (object id in datas)
+                {
+                    if (sIds != "")
+                        sIds = sIds + ", ";
+                    sIds = sIds + Utility.SQLValueString(id);
+                }
+
+                condition = whereColumn + " IN (" + sIds + ")\n";
+            }
+            else
+            {
+
+                condition = whereColumn + " = :v" + param_name;
+
+                Utility.SQLValueString(param, "v" + param_name, datas.FirstOrDefault());
+            }
+
+            return condition;
+        }
+        public static string ConditionInOrEqual(string whereColumn, long?[] datas, List<DBParameter> param)
+        {
+            string condition , param_name = whereColumn;
+            whereColumn = whereColumn.Trim();
+            if (whereColumn.IndexOf(' ') > -1)
+            {
+                throw new Exception("ConditionInOrEqual : column " + whereColumn + " ไม่สามารถมีช่องว่างได้");
+            }
+            if (whereColumn.IndexOf(".") > -1)
+            {
+                param_name = whereColumn.Replace('.','_');
+            }
+            if (datas.Count() > 1)
+            {
+                string sIds = "";
+                foreach (object id in datas)
+                {
+                    if (sIds != "")
+                        sIds = sIds + ", ";
+                    sIds = sIds + Utility.SQLValueString(id);
+                }
+
+                condition = whereColumn + " IN (" + sIds + ")\n";
+            }
+            else
+            {
+
+                condition = whereColumn + " = :v" + param_name;
+
+                Utility.SQLValueString(param, "v" + param_name, datas.FirstOrDefault());
+            }
+
+            return condition;
+        }
         /// <summary>
         /// เลขบัญชีเปิดหน้า 4 หลัง 3
         /// </summary>
@@ -47,7 +116,32 @@ namespace ITUtility
             return AccNo;
         }
 
+        public static string Account_No_Format(string acc_no)
+        {
 
+            string acc;
+            string acc1 = "", acc2 = "", acc3 = "", acc4 = "", acc5 = "";
+            if (string.IsNullOrEmpty(acc_no)) return acc_no;
+
+            acc1 = acc_no.Substring(0, 3);
+            acc2 = acc_no.Substring(3, 1);
+            acc3 = acc_no.Substring(4, 5);
+            acc4 = acc_no.Substring(9, 1);
+
+            if (acc_no.Count() > 10)
+            {
+                acc5 = acc_no.Substring(10, acc_no.Count() - 10);
+                if (acc2.Count() > 5) acc2 = acc2.Substring(0, 5);
+                acc = string.Format("{0}-{1}-{2}-{3}-{4}", acc1, acc2, acc3, acc4, acc5);
+            }
+            else
+            {
+
+                acc = string.Format("{0}-{1}-{2}-{3}", acc1, acc2, acc3, acc4);
+            }
+
+            return acc;
+        }
 
         /// <summary>
         /// จัด format เลขบัตรเครดิต
@@ -311,11 +405,28 @@ namespace ITUtility
                 return ((string)input).Trim();
             return (string)input;
         }
+
         public static string GetDBStringValue(DataRow dr, string fieldName)
         {
             if (!DataRowHasValue(dr, fieldName))
                 return null;
             return GetDBStringValue(dr[fieldName]);
+        }
+        public static string GetDBStringValueNotTrim(object input)
+        {
+            if (input.IsNullOrDBNull())
+                return null;
+            if (!(input is string))
+                return null;
+            if (!string.IsNullOrEmpty((string)input))
+                return ((string)input);
+            return (string)input;
+        }
+        public static string GetDBStringValueNotTrim(DataRow dr, string fieldName)
+        {
+            if (!DataRowHasValue(dr, fieldName))
+                return null;
+            return GetDBStringValueNotTrim(dr[fieldName]);
         }
 
         public static char? GetDBCharValue(object input)
@@ -705,9 +816,83 @@ namespace ITUtility
                 return "Null";
         }
 
-        public static string SQLValueString(object input)
+        //public static string SQLValueString(object input)
+        //{
+        //    string returnStr = "";
+        //    if (input == null)
+        //    {
+        //        returnStr = "Null";
+        //    }
+        //    else if (input is DBNull)
+        //    {
+        //        returnStr = "Null";
+        //    }
+        //    else
+        //    {
+        //        if (input is string)
+        //        {
+
+        //            if ((string)input == "")
+        //            {
+        //                returnStr = "Null";
+        //            }
+        //            else
+        //            {
+        //                returnStr = "'" + ((string)input).Replace("'", "''") + "'";
+        //            }
+        //        }
+        //        else if (input is Char)
+        //        {
+        //            Char rtnChr = (Char)input;
+        //            string rtnStr = rtnChr.ToString();
+        //            rtnStr = rtnStr.Trim();
+        //            if (rtnStr == "")
+        //            {
+        //                returnStr = "Null";
+        //            }
+        //            else
+        //            {
+        //                returnStr = "'" + rtnStr.Replace("'", "''") + "'";
+        //            }
+        //        }
+        //        else if (input is Int16)
+        //        {
+        //            returnStr = ((Int16)input).ToString();
+        //        }
+        //        else if (input is Int32)
+        //        {
+        //            returnStr = ((Int32)input).ToString();
+        //        }
+        //        else if (input is Int64)
+        //        {
+        //            returnStr = ((Int64)input).ToString();
+        //        }
+        //        else if (input is Double)
+        //        {
+        //            returnStr = ((Double)input).ToString();
+        //        }
+        //        else if (input is Decimal)
+        //        {
+        //            returnStr = ((Decimal)input).ToString();
+        //        }
+        //        else if (input is Single)
+        //        {
+        //            returnStr = ((Single)input).ToString();
+        //        }
+        //        else if (input is DateTime)
+        //        {
+        //            returnStr = SQLDate((DateTime)input);
+        //        }
+        //        else
+        //        {
+        //            returnStr = input.ToString();
+        //        }
+        //    }
+        //    return returnStr;
+        //}
+        public static String SQLValueString(Object input)
         {
-            string returnStr = "";
+            String returnStr = "";
             if (input == null)
             {
                 returnStr = "Null";
@@ -718,22 +903,32 @@ namespace ITUtility
             }
             else
             {
-                if (input is string)
+                if (input is String)
                 {
 
-                    if ((string)input == "")
+                    if ((String)input == "")
                     {
                         returnStr = "Null";
                     }
                     else
                     {
-                        returnStr = "'" + ((string)input).Replace("'", "''") + "'";
+                      //  var asciiBytesCount = Encoding.ASCII.GetByteCount((String)input);
+                       // var unicodBytesCount = Encoding.UTF8.GetByteCount((String)input);
+                        returnStr = "'" + ((String)input).Replace("'", "''") + "'";
+                        //if (asciiBytesCount == unicodBytesCount)
+                        //{
+                        //    returnStr = "'" + ((String)input).Replace("'", "''") + "'";
+                        //}
+                        //else
+                        //{
+                        //    returnStr = "N'" + ((String)input).Replace("'", "''") + "'";
+                        //}
                     }
                 }
                 else if (input is Char)
                 {
                     Char rtnChr = (Char)input;
-                    string rtnStr = rtnChr.ToString();
+                    String rtnStr = rtnChr.ToString();
                     rtnStr = rtnStr.Trim();
                     if (rtnStr == "")
                     {
@@ -741,7 +936,21 @@ namespace ITUtility
                     }
                     else
                     {
-                        returnStr = "'" + rtnStr.Replace("'", "''") + "'";
+
+                        returnStr = "N'" + rtnStr.Replace("'", "''") + "'";
+                        //var asciiBytesCount = Encoding.ASCII.GetByteCount(rtnStr);
+                        //var unicodBytesCount = Encoding.UTF8.GetByteCount(rtnStr);
+
+                        //if (asciiBytesCount == unicodBytesCount)
+                        //{
+                        //    returnStr = "'" + rtnStr.Replace("'", "''") + "'";
+                        //}
+                        //else
+                        //{
+                        //    returnStr = "N'" + rtnStr.Replace("'", "''") + "'";
+                        //}
+
+
                     }
                 }
                 else if (input is Int16)
@@ -778,6 +987,185 @@ namespace ITUtility
                 }
             }
             return returnStr;
+        }
+        public static void SQLValueString(List<DBParameter> paramList, string name, object input)
+        {
+            string returnStr = "";
+            if (input == null)
+            {
+                returnStr = "Null";
+                paramList.Add(new DBParameter(name, DBNull.Value, OracleDbType.Varchar2));
+            }
+            else if (input is DBNull)
+            {
+                returnStr = "Null";
+                paramList.Add(new DBParameter(name, DBNull.Value, OracleDbType.Varchar2));
+
+            }
+            else
+            {
+                if (input is string)
+                {
+
+                    if ((string)input == "")
+                    {
+                        returnStr = "Null";
+                        paramList.Add(new DBParameter(name, DBNull.Value , OracleDbType.Varchar2));
+                    }
+                    else
+                    {
+                        returnStr = "'" + ((string)input).Replace("'", "''") + "'";
+
+                        paramList.Add(new DBParameter(name, input, OracleDbType.Varchar2));
+                    }
+                }
+                else if (input is Char)
+                {
+                    Char rtnChr = (Char)input;
+                    string rtnStr = rtnChr.ToString();
+                    rtnStr = rtnStr.Trim();
+                    if (rtnStr == "")
+                    {
+                        returnStr = "Null";
+                    }
+                    else
+                    {
+                        returnStr = "'" + rtnStr.Replace("'", "''") + "'";
+                        paramList.Add(new DBParameter(name, input, OracleDbType.Char));
+                    }
+                }
+                else if (input is Int16)
+                {
+                    returnStr = ((Int16)input).ToString();
+
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Int16));
+                }
+                else if (input is Int32)
+                {
+                    returnStr = ((Int32)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Int32));
+                }
+                else if (input is Int64)
+                {
+                    returnStr = ((Int64)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Int64));
+                }
+                else if (input is Double)
+                {
+                    returnStr = ((Double)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Double));
+                }
+                else if (input is Decimal)
+                {
+                    returnStr = ((Decimal)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Decimal));
+                }
+                else if (input is Single)
+                {
+                    returnStr = ((Single)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Single));
+                }
+                else if (input is DateTime)
+                {
+                    returnStr = SQLDate((DateTime)input);
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Date));
+                }
+                else
+                {
+                    returnStr = input.ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Varchar2));
+                }
+            }
+        }
+        public static void SQLValueString(List<DBParameter> paramList, string name, object input, int size = 50)
+        {
+            string returnStr = "";
+            if (input == null)
+            {
+                returnStr = "Null";
+                paramList.Add(new DBParameter(name, DBNull.Value, OracleDbType.Varchar2));
+            }
+            else if (input is DBNull)
+            {
+                returnStr = "Null";
+                paramList.Add(new DBParameter(name, DBNull.Value, OracleDbType.Varchar2));
+
+            }
+            else
+            {
+                if (input is string)
+                {
+
+                    if ((string)input == "")
+                    {
+                        returnStr = "Null";
+                        paramList.Add(new DBParameter(name, DBNull.Value, OracleDbType.Varchar2));
+                    }
+                    else
+                    {
+                        returnStr = "'" + ((string)input).Replace("'", "''") + "'";
+
+                        paramList.Add(new DBParameter(name, input, OracleDbType.Varchar2, size));
+                    }
+                }
+                else if (input is Char)
+                {
+                    Char rtnChr = (Char)input;
+                    string rtnStr = rtnChr.ToString();
+                    rtnStr = rtnStr.Trim();
+                    if (rtnStr == "")
+                    {
+                        returnStr = "Null";
+                    }
+                    else
+                    {
+                        returnStr = "'" + rtnStr.Replace("'", "''") + "'";
+                        paramList.Add(new DBParameter(name, input, OracleDbType.Char, size));
+                    }
+                }
+                else if (input is Int16)
+                {
+                    returnStr = ((Int16)input).ToString();
+
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Int16, size));
+                }
+                else if (input is Int32)
+                {
+                    returnStr = ((Int32)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Int32, size));
+                }
+                else if (input is Int64)
+                {
+                    returnStr = ((Int64)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Int64, size));
+                }
+                else if (input is Double)
+                {
+                    returnStr = ((Double)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Double, size));
+                }
+                else if (input is Decimal)
+                {
+                    returnStr = ((Decimal)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Decimal, size));
+                }
+                else if (input is Single)
+                {
+                    returnStr = ((Single)input).ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Single, size));
+                }
+                else if (input is DateTime)
+                {
+                    returnStr = SQLDate((DateTime)input);
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Date, size));
+                }
+                else
+                {
+                    returnStr = input.ToString();
+                    paramList.Add(new DBParameter(name, input, OracleDbType.Varchar2, size));
+                }
+            }
+
         }
 
         public static string SQLValueInString(Array inputs)
@@ -1082,7 +1470,8 @@ namespace ITUtility
             if (inputDate == null) return "";
             else return dateTimeToString(inputDate.Value, format, era);
         }
-        public static String dateTimeToString(DateTime inputDate, string format, string era) {
+        public static String dateTimeToString(DateTime inputDate, string format, string era)
+        {
             DateTime dateIn = inputDate;
 
             List<string> innerLs = new List<string>();
@@ -1092,57 +1481,67 @@ namespace ITUtility
 
             bool inner = false;
 
-            foreach(char c in cs) {
-                if(!inner) {
-                    if(c != '[') {
+            foreach (char c in cs)
+            {
+                if (!inner)
+                {
+                    if (c != '[')
+                    {
                         lc.Add(c);
                     }
-                    else { //inner start
+                    else
+                    { //inner start
                         inner = true;
                         innerLc = new List<char>();
                         lc.AddRange(("[" + innerLs.Count().ToString() + "]").ToCharArray());
                     }
                 }
-                else { //inner zone
-                    if(c == ']') {//inner end
+                else
+                { //inner zone
+                    if (c == ']')
+                    {//inner end
                         innerLs.Add(new string(innerLc.ToArray()));
                         inner = false;
                         innerLc = null;
                     }
-                    else {
+                    else
+                    {
                         innerLc.Add(c);
                     }
                 }
             }
-            if(innerLc != null) {
+            if (innerLc != null)
+            {
                 innerLs.Add(new string(innerLc.ToArray()));
             }
 
             string s1 = new string(lc.ToArray());
             string s2 = oldDateTimeToString(dateIn, s1, era);
-            foreach(string innerS in innerLs) {
+            foreach (string innerS in innerLs)
+            {
                 s2 = s2.Replace("[" + innerLs.IndexOf(innerS).ToString() + "]", innerS);
             }
             return s2;
         }
 
-        private static string oldDateTimeToString(DateTime inputDate, string format, string era) {
+        private static string oldDateTimeToString(DateTime inputDate, string format, string era)
+        {
             string returnStr = "";
 
-            if(format == "o")
+            if (format == "o")
                 return inputDate.ToString("o");
 
-            if(era == null) era = "";
+            if (era == null) era = "";
             bool AD_era = true;
             string ERA = era.ToUpper();
-            if(ERA == "BU" || ERA == "B.U." || ERA == "B.U")
+            if (ERA == "BU" || ERA == "B.U." || ERA == "B.U")
                 AD_era = false;
 
 
             string sDay = inputDate.Day.ToString().PadLeft(2, '0');
             string sMonth = inputDate.Month.ToString().PadLeft(2, '0');
             string sYear;
-            if(!AD_era)
+            if (!AD_era)
                 sYear = (inputDate.Year + 543).ToString().PadLeft(4, '0');
             else
                 sYear = inputDate.Year.ToString().PadLeft(4, '0');
@@ -1152,7 +1551,8 @@ namespace ITUtility
             string sMilliSecond = inputDate.Millisecond.ToString().PadLeft(2, '0');
             string tMonthName = "";
             string tShortMonthName = "";
-            switch(inputDate.Month) {
+            switch (inputDate.Month)
+            {
                 case 1:
                     tShortMonthName = "ม.ค.";
                     break;
@@ -1191,7 +1591,8 @@ namespace ITUtility
                     break;
             }
             //ชื่อเดือนเต็ม
-            switch(inputDate.Month) {
+            switch (inputDate.Month)
+            {
                 case 1:
                     tMonthName = "มกราคม";
                     break;
@@ -1233,6 +1634,7 @@ namespace ITUtility
 
             returnStr = format.Replace("dd", sDay).Replace("MM", sMonth).Replace("yyyy", sYear).Replace("hh", sHour).Replace("mi", sMinute).Replace("ss", sSecond).Replace("ms", sMilliSecond).Replace("Month", tMonthName).Replace("m.m.", tShortMonthName);
             returnStr = returnStr.Replace("d", inputDate.Day.ToString());
+            returnStr = returnStr.Replace("M", inputDate.Month.ToString());
             returnStr = returnStr.Replace("yy", sYear.Substring(2));
             return returnStr;
         }
@@ -2045,7 +2447,30 @@ namespace ITUtility
         }
 
 
+        public static DataTable CreateDataTable<T>(IEnumerable<T> list)
+        {
+            Type type = typeof(T);
+            var properties = type.GetProperties();
 
+            DataTable dataTable = new DataTable();
+            foreach (PropertyInfo info in properties)
+            {
+                dataTable.Columns.Add(new DataColumn(info.Name, Nullable.GetUnderlyingType(info.PropertyType) ?? info.PropertyType));
+            }
+
+            foreach (T entity in list)
+            {
+                object[] values = new object[properties.Length];
+                for (int i = 0; i < properties.Length; i++)
+                {
+                    values[i] = properties[i].GetValue(entity,null);
+                }
+
+                dataTable.Rows.Add(values);
+            }
+
+            return dataTable;
+        }
         public static decimal? GetOraParamDecimal(OracleParameter input)
         {
             if (input == null)
@@ -2182,13 +2607,13 @@ namespace ITUtility
             dt.Dispose();
             return result.ToArray();
         }
-        public static T[] FillDataTable<T>(string sqlStr, OracleConnection connection, List<DBParameter> param  ) where T : new()
+        public static T[] FillDataTable<T>(string sqlStr, OracleConnection connection, List<DBParameter> param) where T : new()
         {
             OracleCommand cmd = new OracleCommand(sqlStr, connection);
-           
+
             DataTable dt = new DataTable();
             IEnumerable<T> result;
-           
+
             if (param != null && param.Any())
             {
                 cmd.Parameters.Clear();
@@ -2196,6 +2621,7 @@ namespace ITUtility
                 foreach (DBParameter item in param)
                 {
                     cmd.Parameters.Add(new OracleParameter(item.NAME, item.TYPE)).Value = item.VALUE;
+                    
                 }
             }
             //  cmd.Parameters.AddRange(param);
@@ -2215,6 +2641,22 @@ namespace ITUtility
 
             return result.ToArray();
         }
+        //public static void ExecuteNonQuery(OracleConnection connection, string sqlStr,  List<DBParameter> param) 
+        //{
+        //    OracleCommand cmd = new OracleCommand(sqlStr, connection);
+        //    if (param != null && param.Any())
+        //    {
+        //        cmd.Parameters.Clear();
+        //        cmd.BindByName = true;
+        //        foreach (DBParameter item in param)
+        //        {
+        //            cmd.Parameters.Add(new OracleParameter(item.NAME, item.TYPE)).Value = item.VALUE;
+        //        }
+        //    }
+        //    //  cmd.Parameters.AddRange(param);
+        //    cmd.ExecuteNonQuery();
+        //    cmd.Dispose();
+        //}
         public static DataTable GetFilledDataTable(string sqlStr, OracleConnection connection)
         {
             return FillDataTable(sqlStr, connection);
@@ -2365,6 +2807,23 @@ namespace ITUtility
             return i;
         }
 
+        public static int ExecuteNonQuery(string sqlStr, OracleConnection conn, List<DBParameter> DBParams)
+        {
+            OracleCommand oCmd = new OracleCommand(sqlStr, conn);
+
+            if (DBParams != null && DBParams.Any())
+            {
+                oCmd.Parameters.Clear();
+                oCmd.BindByName = true;
+                foreach (DBParameter item in DBParams)
+                {
+                    oCmd.Parameters.Add(new OracleParameter(item.NAME, item.TYPE)).Value = item.VALUE;
+                }
+            }
+            int i = oCmd.ExecuteNonQuery();
+            oCmd.Dispose();
+            return i;
+        }
         public static long GetSeqNextVal(OracleConnection conn, string sequenceName)
         {
             string sqlStr =
@@ -2378,6 +2837,24 @@ namespace ITUtility
         public static object ExecuteScalar(OracleConnection conn, string sqlStr)
         {
             OracleCommand oCmd = new OracleCommand(sqlStr, conn);
+             
+            object returnValue = oCmd.ExecuteScalar();
+            oCmd.Dispose();
+            return returnValue;
+        }
+        public static object ExecuteScalar(OracleConnection conn, string sqlStr,  List<DBParameter> DBParams)
+        {
+            OracleCommand oCmd = new OracleCommand(sqlStr, conn);
+
+            if (DBParams != null && DBParams.Any())
+            {
+                oCmd.Parameters.Clear();
+                oCmd.BindByName = true;
+                foreach (DBParameter item in DBParams)
+                {
+                    oCmd.Parameters.Add(new OracleParameter(item.NAME, item.TYPE)).Value = item.VALUE;
+                }
+            }
             object returnValue = oCmd.ExecuteScalar();
             oCmd.Dispose();
             return returnValue;
@@ -2625,11 +3102,64 @@ namespace ITUtility
         public DBParameter(string IN_NAME, object IN_VALUE, OracleDbType IN_TYPE = OracleDbType.Varchar2, int IN_SIZE = 20)
         {
             this.NAME = IN_NAME;
-            this.VALUE = IN_VALUE;
+            if (IN_VALUE == null)
+            {
+                this.VALUE = DBNull.Value;
+            }
+            else if (IN_VALUE is DBNull)
+            {
+                this.VALUE = DBNull.Value;
+
+            }
+            else
+
+            {
+                this.VALUE = IN_VALUE;
+            }
+
             this.TYPE = IN_TYPE;
             this.SIZE = IN_SIZE;
         }
+        public DBParameter(string IN_NAME, object IN_VALUE, OracleDbType IN_TYPE = OracleDbType.Varchar2 )
+        {
+            this.NAME = IN_NAME;
+            if (IN_VALUE == null)
+            {
+                this.VALUE = DBNull.Value;
+            }
+            else if (IN_VALUE is DBNull)
+            {
+                this.VALUE = DBNull.Value;
 
+            }
+            else
+
+            {
+                this.VALUE = IN_VALUE;
+            }
+
+            this.TYPE = IN_TYPE; 
+        }
+        public DBParameter(string IN_NAME, object IN_VALUE )
+        {
+            this.NAME = IN_NAME;
+            if (IN_VALUE == null)
+            {
+                this.VALUE = DBNull.Value;
+            }
+            else if (IN_VALUE is DBNull)
+            {
+                this.VALUE = DBNull.Value;
+
+            }
+            else
+
+            {
+                this.VALUE = IN_VALUE;
+            }
+
+            this.TYPE = OracleDbType.Varchar2;
+        }
     }
 
     internal static class DataTableExtensions
@@ -2764,6 +3294,57 @@ namespace ITUtility
 
                 return Enum.ToObject(type, value);
             }
+        }
+    }
+    public static class UsingServiceClient
+    {
+        public static void Do<TClient>(TClient client, Action<TClient> execute)
+            where TClient : class, ICommunicationObject
+        {
+            try
+            {
+                execute(client);
+            }
+            finally
+            {
+                client.DisposeSafely();
+            }
+        }
+
+        public static void DisposeSafely(this ICommunicationObject client)
+        {
+            if (client == null)
+            {
+                return;
+            }
+
+            bool success = false;
+
+            try
+            {
+                if (client.State != CommunicationState.Faulted)
+                {
+                    client.Close();
+                    success = true;
+                }
+            }
+            finally
+            {
+                if (!success)
+                {
+                    client.Abort();
+                }
+            }
+        }
+    }
+
+    public static class Extensions
+    {
+        public static HashSet<T> ToHashSet<T>(
+            this IEnumerable<T> source,
+            IEqualityComparer<T> comparer = null)
+        {
+            return new HashSet<T>(source, comparer);
         }
     }
 }
