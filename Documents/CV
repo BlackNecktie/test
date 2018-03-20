@@ -1,0 +1,14 @@
+Bangkok life assurance public company limited
+CallCenter package
+CallCenter External
+	ระบบ CallCenter สำหรับรองรับการสอบถามข้อมูลต่างๆเกี่ยวกับประกันชีวิต
+CallCenter External Monitor
+	เพื่อตรวจสอบการใช้งานระบบ Callcenter External ของเจ้าหน้าที่ Outsource Callcenter 
+CallCenterSentPaybook
+	เพื่อใช้เป็นระบบตรวจสอบข้อมูลรายการขอหนังสือรับรองการชำระเบี้ยหรือใบเตือนการชำระเบี้ยผ่านทางระบบ New Callcenter ส่งข้อมูล Email ถึงเจ้าหน้าที่การเงินเพื่อส่งข้อมูลหนังสือรับรองการชำระเบี้ยหรือใบเตือนการชำระเบี้ยให้กับลูกค้าที่ติดต่อเข้ามาว่ารายการข้างต้นถูกดำเนินการไปแล้วหรือไม่
+	
+	
+	
+TeleInter
+	TelePro
+		ระบบ TeleSale สำหรับการขายกรมธรรม์หรืออื่นๆผ่านทางโทรศัพท์
