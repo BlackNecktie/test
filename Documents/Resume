@@ -2,3 +2,4 @@ Accomplishment
   ประสบการณ์ 4 ปี ในการทำงานสายการพัฒนาซอฟแว์
 ได้รับการมอบหมายให้พัฒนาระบบ CallCenterExternal ซึ่งเป็นระบบ Callcenter ที่พนักงานภายนอกเป็นผู้ใช้งาน โดยพัฒนาร่วมกับ Senior รวมถึงโปรแกรมเสริม เช่น CallCenterExternalMonitor 
 ซึ่งใช้สำหรับการตรวจสอบการลงข้อมูลของCallCenterExternal
+--พัฒนาระบบ TelePro versionใหม่ ใช้ Telerik UI ร่วมกับ SA โดยปรับปรุงจากของเดิม
