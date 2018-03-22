@@ -1,0 +1,946 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using EmailManagement.DataAccess;
+using EmailManagement.DataContract;
+using ITUtility;
+using DataAccessUtility;
+using System.IO;
+using EmailManagement.DataContract.StructureModel;
+using EmailManagement.DataContract.StructureModel.Enum;
+using System.Net.Mail;
+using System.Net.Mime;
+using EmailManagement.BusinessLogic.Helper;
+using EmailManagement.DataContract.StructureModel.Const;
+
+namespace EmailManagement.BusinessLogic
+{
+    public partial class LogicV2
+    {
+
+
+        private const string _BLAMailServerCode = "BLA";
+        private const string ConnectionName = "BLAConnection";
+
+        public void SendMail(MailParams param, string userId)
+        {
+
+            Repository repository = new Repository(ConnectionName);
+            long sendingId = 0;
+            try
+            {
+                repository.OpenConnection();
+                repository.beginTransaction();
+                repository.GetDbSysDate();
+                // get server host
+
+
+                #region add data 
+
+                var server = repository.GetServer(_BLAMailServerCode);
+
+                if (param.IsKeepMailLog)
+                {
+                    sendingId = AddLogMail(param, server.SERVER_ID.Value, userId, ref repository);
+                }
+                //-------------------------------SEND mails--------------------------------------------------
+
+                try
+                {
+                    SendMailToClient(param, server.IP_ADDRESS_V4);
+                }
+                catch (Exception e)
+                {
+
+                    if (param.IsKeepMailLog)
+                    {
+                        repository.UpdateSendindStatus(sendingId, EMailSendStatus.Error);
+                    }
+                }
+                //-------------------------------SEND mails END--------------------------------------------------
+
+                repository.commitTransaction();
+                repository.CloseConnection();
+
+                #endregion
+
+            }
+            catch (Exception e)
+            {
+                repository.rollbackTransaction();
+                throw e;
+            }
+            finally
+            {
+                repository.CloseConnection();
+            }
+        }
+
+
+        public void SendMailOld(MailParamsOld param, string userId)
+        {
+
+            Repository repository = new Repository(ConnectionName);
+            try
+            {
+                repository.OpenConnection();
+                repository.beginTransaction();
+                repository.GetDbSysDate();
+                // get server host
+                long sendingId = 0;
+                #region add data 
+
+                var server = repository.GetServer(_BLAMailServerCode);
+
+                if (param.BaseParam.IsKeepMailLog)
+                {
+                    AddLogMail(param.BaseParam, server.SERVER_ID.Value, userId, ref repository);
+                }
+                //-------------------------------SEND mails--------------------------------------------------
+
+                try
+                {
+                    SendMailToClientOld(param, server.IP_ADDRESS_V4);
+                }
+                catch (Exception e)
+                {
+                    if (param.BaseParam.IsKeepMailLog)
+                    {
+                        repository.UpdateSendindStatus(sendingId, EMailSendStatus.Error);
+                    }
+                }
+                //-------------------------------SEND mails END--------------------------------------------------
+
+                repository.commitTransaction();
+                repository.CloseConnection();
+
+                #endregion
+
+            }
+            catch (Exception e)
+            {
+                repository.rollbackTransaction();
+                throw e;
+            }
+            finally
+            {
+                repository.CloseConnection();
+            }
+        }
+
+
+
+
+        private long AddLogMail(MailParams param, int serverId, string userId, ref Repository repository)
+        {
+
+            #region add data 
+
+            var emlMailObj = new EML_MAIL()
+            {
+                SUBJECT = param.Subject,
+                IS_BODY_HTML = param.IsHtmlBody ? 'Y' : 'N',
+                MESSAGE = param.Body,
+                UPD_DT = repository.SysDate
+            };
+            emlMailObj.EML_MAIL_ID = repository.AddEML_MAIL(emlMailObj);
+
+            var emlSender = new EML_SENDER()
+            {
+                EML_MAIL_ID = emlMailObj.EML_MAIL_ID,
+                MAIL_ADDRESS = param.From
+            };
+            repository.AddEML_SENDER(emlSender);
+
+
+            #region Upload file attachment
+            // Upload file attachment
+            /*  get Stream to byte[]  */
+            if (param.FileAttechments != null && param.FileAttechments.Any())
+            {
+                var lenfth = param.FileAttechments.Count;
+                for (int i = 0; i < lenfth; i++)
+                {
+                    EML_ATTACHMENT attachment = new EML_ATTACHMENT();
+
+                    attachment.EML_MAIL_ID = emlMailObj.EML_MAIL_ID;
+                    attachment.FILE_NAME = param.FileAttechments[i].FileName;
+
+                    try
+                    {
+                        // select seq
+                        repository.Get_EML_ATTACHMENT_ID_SEQ(ref attachment);
+                        // upload file
+                        repository.UploadFile(ref attachment, i + 1, param.FileAttechments[i].ContentType, param.FileAttechments[i].Data);
+                        // insert attachment
+                        repository.InsertEML_ATTACHMENT(ref attachment);
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
+            }
+            #endregion end Upload file attachment
+
+            #region Insert  Reference
+            //-------------------------------Insert POlicy Reference--------------------------------------------
+            if (param.ReferenceOptional != null)
+            {
+                #region policy refer
+                if (param.ReferenceOptional.Tracking != null && param.ReferenceOptional.Tracking.Any())
+                {
+
+                    foreach (var trackingRef in param.ReferenceOptional.Tracking)
+                    {
+                        if (trackingRef.PolicyId == null) // find policyId when data is null  (find form policy & policyHolding)
+                        {
+                            if (!string.IsNullOrEmpty(trackingRef.PolicyHolding))
+                            {
+                                trackingRef.PolicyId = repository.GetPolicyId(trackingRef.Policy, trackingRef.PolicyHolding);
+                            }
+                            else
+                            {
+                                trackingRef.PolicyId = repository.GetPolicyId(trackingRef.Policy);
+                            }
+                        }
+
+
+                        if (trackingRef.PolicyId != null) // insert data for reference with policy
+                        {
+                            var emlPolicy = new EML_MAIL_POLICY()
+                            {
+                                EML_MAIL_ID = emlMailObj.EML_MAIL_ID,
+                                POLICY_ID = trackingRef.PolicyId
+                            };
+                            repository.AddEML_MAIL_POLICY(emlPolicy);
+
+                            //repo insert job and subjob for policy
+                            if (trackingRef.Jobs != null && trackingRef.Jobs.Any())
+                            {
+                                foreach (var jobItem in trackingRef.Jobs)
+                                {
+                                    if (!string.IsNullOrEmpty(jobItem.Job))
+                                    {
+                                        EML_MAIL_POLICY_SUBJOB subjobObject = new EML_MAIL_POLICY_SUBJOB();
+                                        subjobObject.JOB_CODE = jobItem.Job;
+                                        subjobObject.MAIL_POLICY_ID = emlPolicy.MAIL_POLICY_ID;
+                                        repository.AddEML_MAIL_POLICY_JOB(subjobObject);
+
+                                        if (jobItem.SubJobs != null && jobItem.SubJobs.Any())
+                                        {
+                                            if (jobItem.SubJobs.Distinct().Count() != jobItem.SubJobs.Count())
+                                            {
+                                                // check duplicate jobCode
+                                                throw new Exception("Duplicate subJob code");
+                                            }
+                                            else
+                                            {
+
+                                                foreach (var subjobItem in jobItem.SubJobs)
+                                                {
+                                                    subjobObject.SUBJOB_CODE = subjobItem;
+                                                    repository.AddEML_MAIL_POLICY_SUBJOB(subjobObject);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                }
+                #endregion
+
+                #region customeRefer
+
+                if (param.ReferenceOptional.CustomeTracking != null)
+                {
+                    var trackingRefs = param.ReferenceOptional.CustomeTracking;
+
+                    if (trackingRefs != null && trackingRefs.Any())
+                    {
+
+                        foreach (var item in trackingRefs)
+                        {
+                            var eml_ref = repository.GetEML_REFERENCE(null, new string[] { item.KeyName });
+                            if (eml_ref != null && eml_ref.Any())
+                            {
+                                if (eml_ref.Count() > 1) throw new Exception("Reference Nmae  more one record.");
+
+                                repository.AddEML_MAIL_REFERENCE(new EML_MAIL_REFERENCE()
+                                {
+                                    EML_MAIL_ID = emlMailObj.EML_MAIL_ID,
+                                    EML_REFERENCE_ID = eml_ref.First().EML_REFERENCE_ID,
+                                    REF_VALUE = item.KeyValue
+                                });
+
+                                //if (item.KeyValue != null && item.KeyValue.Any())
+                                //{
+
+                                //    foreach (var value in item.KeyValue)
+                                //    {
+                                //        repository.AddEML_MAIL_REFERENCE(new EML_MAIL_REFERENCE()
+                                //        {
+                                //            EML_MAIL_ID = emlMailObj.EML_MAIL_ID,
+                                //            EML_REFERENCE_ID = eml_ref.First().EML_REFERENCE_ID,
+                                //            REF_VALUE = value.ToString()
+                                //        });
+                                //    }
+                                //}
+                            }
+                            else
+                            {
+                                throw new Exception("Reference name fot found");
+                            }
+
+                        }
+
+                    }
+                }
+
+                #endregion
+            }
+
+            //-------------------------------Insert policy END--------------------------------------------
+            #endregion Insert policy END
+
+            #region Insert recipient data 
+            // insert recipient data 
+            if (param.Receipients != null)
+            {
+                var emlRepLIst = new List<EML_RECEIPIENT>();
+                if (param.Receipients.To != null && param.Receipients.To.Any())
+                {
+                    emlRepLIst.AddRange(param.Receipients.To.Select(item => new EML_RECEIPIENT()
+                    {
+                        EML_MAIL_ID = emlMailObj.EML_MAIL_ID,
+                        MAIL_ADDRESS = item,
+                        RECEIPIENT_TYPE = Convert.ToChar(EMailReceipientsType.To)
+                    }).ToList());
+                }
+                if (param.Receipients.CC != null && param.Receipients.CC.Any())
+                {
+                    emlRepLIst.AddRange(param.Receipients.To.Select(item => new EML_RECEIPIENT()
+                    {
+                        EML_MAIL_ID = emlMailObj.EML_MAIL_ID,
+                        MAIL_ADDRESS = item,
+                        RECEIPIENT_TYPE = Convert.ToChar(EMailReceipientsType.CC)
+                    }).ToList());
+                }
+                if (param.Receipients.BCC != null && param.Receipients.BCC.Any())
+                {
+                    emlRepLIst.AddRange(param.Receipients.To.Select(item => new EML_RECEIPIENT()
+                    {
+                        EML_MAIL_ID = emlMailObj.EML_MAIL_ID,
+                        MAIL_ADDRESS = item,
+                        RECEIPIENT_TYPE = Convert.ToChar(EMailReceipientsType.BCC)
+                    }).ToList());
+                }
+
+                if (emlRepLIst != null && emlRepLIst.Any())
+                {
+                    foreach (var item in emlRepLIst)
+                    {
+                        // insert recipient
+                        var recipientId = repository.AddEML_RECEIPIENT(item);
+
+                        // insert recipient type
+                        if (param.Receipients.EReceipientsType != null)
+                        {
+                            // repository.AddEML_POL_RECEIPIENT_TYPE(new EML_POL_RECEIPIENT_TYPE() { RECEIPIENT_ID = recipientId, POL_RECEIPIENT_TYPE = param.Receipients.EReceipientsType });
+                        }
+                    }
+                }
+            }
+            #endregion Insert recipient data 
+
+            #region add Serder
+            //insert data to EML_SENDING
+            var sendingId = repository.AddEML_SENDING(new Eml_SENDING()
+            {
+                SENDER_ID = userId,
+                SEND_DATE = repository.SysDate,
+                EML_MAIL_ID = emlMailObj.EML_MAIL_ID,
+                SERVER_ID = serverId,
+                SEND_STATUS = Convert.ToChar(EMailSendStatus.Sended)
+            });
+
+            return sendingId;
+            #endregion
+            //-------------------------------SEND mails--------------------------------------------------
+
+            #endregion
+
+
+
+        }
+        private MailInfo[] GetMailInfoLog(long[] mailId, bool includeAttachment)
+        {
+
+
+            Repository repository = new Repository(ConnectionName);
+            try
+            {
+                var mailList = new List<MailInfo>();
+                foreach (var item in mailId)
+                {
+                    var modelInfo = new MailInfo();
+
+                    var mailIDs = new long?[] { item };
+
+                    // subject, body
+                    var mail = repository.GetEML_MAIL(mailIDs);
+                    if (mail == null) throw new Exception("email data not found.");
+                    modelInfo.MailId = mail.First().EML_MAIL_ID.Value;
+                    modelInfo.Subject = mail.First().SUBJECT;
+                    modelInfo.Body = mail.First().MESSAGE;
+                    modelInfo.IsHtmlBody = mail.First().IS_BODY_HTML == 'Y' ? true : false;
+
+                    // sender 
+                    var sender = repository.GetEML_SENDER(mailIDs);
+                    if (sender == null) throw new Exception("sender data not found.");
+                    modelInfo.From = sender.First().MAIL_ADDRESS;
+
+                    //  sending 
+                    var sending = repository.GetEML_SENDING(null, null, mailIDs);
+                    if (sending == null) throw new Exception("sending data not found.");
+                    modelInfo.SendStatus = (sending.First().SEND_STATUS.ToString());
+                    modelInfo.SendDate = (sending.First().SEND_DATE.Value);
+
+                    //  recipient 
+                    var recipient = repository.GetEML_RECEIPIENT(null, mailIDs);
+                    if (recipient == null) throw new Exception("receipint data not found.");
+                    modelInfo.Receipients = new MailReceipients()
+                    {
+                        BCC = recipient.Where(t => t.RECEIPIENT_TYPE == Convert.ToChar(EMailReceipientsType.BCC)).Select(t => t.MAIL_ADDRESS).ToList(),
+                        To = recipient.Where(t => t.RECEIPIENT_TYPE == Convert.ToChar(EMailReceipientsType.To)).Select(t => t.MAIL_ADDRESS).ToList(),
+                        CC = recipient.Where(t => t.RECEIPIENT_TYPE == Convert.ToChar(EMailReceipientsType.CC)).Select(t => t.MAIL_ADDRESS).ToList(),
+                    };
+
+                    // attachment file
+
+                    if (includeAttachment)
+                    {
+                        var attachs = repository.GetEML_ATTACHMENT(null, mailIDs);
+                        if (attachs != null && attachs.Any())
+                        {
+                            foreach (var attachitem in attachs)
+                            {
+                                if (attachitem.IMS_FILE_ID != null)
+                                {
+                                    DataFile fileAttach = null;
+                                    repository.DownloadFile(attachitem.IMS_FILE_ID, "000000", out fileAttach);
+                                    if (fileAttach == null) throw new Exception("can't not load file from IMS system");
+                                    if (modelInfo.FileAttechments == null) modelInfo.FileAttechments = new List<File_Upload>();
+                                    modelInfo.FileAttechments.Add(new File_Upload()
+                                    {
+                                        ContentType = fileAttach.ContentType,
+                                        Data = fileAttach.FileData,
+                                        FileName = fileAttach.FileName
+                                    });
+                                }
+                            }
+
+
+                        }
+                    }
+
+
+
+
+
+
+                    // refereance data  
+                    List<MailBaseTracking> trackingList = null;
+                    // base tracking
+                    var emailPolicy = repository.GetEML_MAIL_POLICYById(new long?[] { item });
+                    if (emailPolicy != null && emailPolicy.Any())
+                    {
+                        trackingList = new List<MailBaseTracking>();
+                        var pInfo = repository.GetPolicyIdInfo(item);
+                        if (pInfo == null) throw new Exception("Policy Id can't found  policy info data.");
+
+                        var tracking = new MailBaseTracking()
+                        {
+                            PolicyId = pInfo.PolicyId,
+                            Policy = pInfo.Policy,
+                            PolicyHolding = pInfo.PolicyHolding
+                        };
+                        var policyJobs = repository.GetEML_MAIL_POLICY_JOB(null, new long?[] { emailPolicy.First().MAIL_POLICY_ID });
+                        if (policyJobs != null && policyJobs.Any())
+                        {
+                            tracking.Jobs = new List<JobInfo>();
+                            foreach (var jobsItem in policyJobs)
+                            {
+                                var subJobInfo = repository.GetEML_MAIL_POLICY_SUBJOB(new long?[] { jobsItem.MAIL_POLICY_JOB_ID });
+                                var jobInfo = new JobInfo()
+                                {
+                                    Job = jobsItem.JOB_CODE,
+                                    SubJobs = (subJobInfo != null && subJobInfo.Any()) ? subJobInfo.Select(sub => sub.SUBJOB_CODE).ToList() : null
+                                };
+                                tracking.Jobs.Add(jobInfo);
+                            }
+
+                        }
+                        trackingList.Add(tracking);
+                    }
+
+                    if (trackingList != null && trackingList.Any())
+                    {
+                        modelInfo.ReferenceOptional = modelInfo.ReferenceOptional ?? new MailTrackingReferenceOptional();
+                        modelInfo.ReferenceOptional.Tracking = trackingList;
+                    }
+
+
+                    // optional tracking
+                    List<MailCustomeTracking> customTracking = null;
+                    var mailRefs = repository.GetEML_MAIL_REFERENCE(null, mailIDs);
+                    if (mailRefs != null && mailRefs.Any())
+                    {
+                        customTracking = new List<MailCustomeTracking>();
+                        var keNameGroup = mailRefs.Select(r => r.EML_REFERENCE_ID).Distinct();
+                        foreach (var refItem in keNameGroup)
+                        {
+                            var refData = repository.GetEML_REFERENCE(new long?[] { refItem.Value }, null).First();
+                            var custom = new MailCustomeTracking()
+                            {
+                                KeyName = refData.REF_NAME,
+                                KeyValue = mailRefs.First().REF_VALUE,
+                                DataType = refData.DATA_TYPE_FLG.ToString()
+                            };
+                            customTracking.Add(custom);
+                        }
+                    }
+                    if (customTracking != null && customTracking.Any())
+                    {
+                        modelInfo.ReferenceOptional = modelInfo.ReferenceOptional ?? new MailTrackingReferenceOptional();
+                        modelInfo.ReferenceOptional.CustomeTracking = customTracking;
+                    }
+
+                    mailList.Add(modelInfo);
+                    // end  refereance data  
+
+                }
+                return mailList.ToArray();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+
+        public File_Upload[] GetFileAttechments(long?[] mailIds)
+        {
+
+            Repository repository = new Repository(ConnectionName);
+            try
+            {
+                var fileAttechments = new List<File_Upload>();
+                repository.OpenConnection();
+                if (mailIds != null && mailIds.Any())
+                {
+                    var attachs = repository.GetEML_ATTACHMENT(null, mailIds);
+                    if (attachs != null && attachs.Any())
+                    {
+                        foreach (var attachitem in attachs)
+                        {
+                            if (attachitem.IMS_FILE_ID != null)
+                            {
+                                DataFile fileAttach = null;
+                                repository.DownloadFile(attachitem.IMS_FILE_ID, "000000", out fileAttach);
+                                if (fileAttach == null) throw new Exception("can't not load file from IMS system");
+                                fileAttechments.Add(new File_Upload()
+                                {
+                                    ContentType = fileAttach.ContentType,
+                                    Data = fileAttach.FileData,
+                                    FileName = fileAttach.FileName
+                                });
+                            }
+                        }
+
+
+                    }
+                }
+            }
+            finally
+            {
+                repository.CloseConnection();
+            }
+            return null;
+        }
+
+        public MailInfo[] GetMailAboutPolicyInfoByMailId(long[] mailId, bool includeAttachment)
+        {
+
+            Repository repository = new Repository(ConnectionName);
+            try
+            {
+                repository.OpenConnection();
+
+                return GetMailInfoLog(mailId, includeAttachment);
+            }
+            finally
+            {
+                repository.CloseConnection();
+            }
+            return null;
+        }
+
+        public MailInfo[] GetMailAboutPolicyInfo(long[] policyId, bool includeAttachment)
+        {
+
+            Repository repository = new Repository(ConnectionName);
+            try
+            {
+                repository.OpenConnection();
+                var mailPolicys = repository.GetEML_MAIL_POLICY(policyId);
+                if (mailPolicys != null && mailPolicys.Any())
+                {
+                    return GetMailInfoLog(mailPolicys.Select(item => item.EML_MAIL_ID.Value).ToArray(), includeAttachment);
+                }
+
+            }
+            finally
+            {
+                repository.CloseConnection();
+            }
+            return null;
+        }
+
+        public MailInfo[] GetMailInfoByAppNo(string appNo, bool includeAttachment)
+        {
+
+
+            return GetMailInfoWithReference("APP_NO", appNo, includeAttachment);
+
+        }
+
+        public MailInfo[] GetMailHistoryByAppNo(string appNo, bool includeAttachment)
+        {
+            var list = new List<MailInfo>();
+
+            var dataOfAppno = GetMailInfoWithReference("APP_NO", appNo, includeAttachment);
+            if (dataOfAppno != null && dataOfAppno.Any())
+            {
+                list.AddRange(dataOfAppno);
+
+            }
+
+            var dataForPolicy = GetMailAboutPolicyInfoByAppNo(appNo, includeAttachment);
+            if (dataForPolicy != null && dataForPolicy.Any())
+            {
+                list.AddRange(dataForPolicy);
+            }
+
+            if (list != null && list.Any())
+            {
+                return list.ToArray();
+
+            }
+
+            return null;
+        }
+
+
+        public MailInfo[] GetMailHistoryByPolicyId(long policyId, bool includeAttachment)
+        {
+
+            Repository repository = new Repository(ConnectionName);
+            var list = new List<MailInfo>();
+
+         
+
+            var dataForPolicy = GetMailAboutPolicyInfo(new long[] { policyId }, includeAttachment);
+            if (dataForPolicy != null && dataForPolicy.Any())
+            {
+                list.AddRange(dataForPolicy);
+            }
+
+            var appNo = repository.GetAppNoByPolicyId(policyId);
+            if (!string.IsNullOrEmpty(appNo))
+            {
+                var dataOfAppno = GetMailInfoWithReference("APP_NO", appNo, includeAttachment);
+                if (dataOfAppno != null && dataOfAppno.Any())
+                {
+                    list.AddRange(dataOfAppno);
+
+                }
+            }
+
+            if (list != null && list.Any())
+            {
+                return list.ToArray();
+
+            }
+
+            return null;
+        }
+
+        public MailInfo[] GetMailAboutPolicyInfoByAppNo(string appNo, bool includeAttachment)
+        {
+
+            Repository repository = new Repository(ConnectionName);
+            try
+            {
+                repository.OpenConnection();
+                var policyId = repository.GetPolicyIdByAppNo(appNo);
+                if (policyId != null)
+                {
+                    var mailPolicys = repository.GetEML_MAIL_POLICY(new long[] { policyId.Value });
+                    if (mailPolicys != null)
+                    {
+                        return GetMailInfoLog(mailPolicys.Select(item => item.EML_MAIL_ID.Value).ToArray(), includeAttachment);
+                    }
+                }
+
+            }
+            finally
+            {
+                repository.CloseConnection();
+            }
+            return null;
+        }
+
+
+        public MailInfo[] GetMailInfoWithReference(string refName, string refValue, bool includeAttachment)
+        {
+
+            Repository repository = new Repository(ConnectionName);
+            try
+            {
+                repository.OpenConnection();
+                var refData = repository.GetMailInWithReference(refName, refValue);
+                if (refData != null && refData.Any())
+                {
+                    return GetMailInfoLog(refData.Select(item => item.EML_MAIL_ID.Value).ToArray(), includeAttachment);
+                }
+            }
+            finally
+            {
+                repository.CloseConnection();
+            }
+            return null;
+        }
+
+        public MailInfo[] GetMailAboutPolicyInfo(string channelType, string policy, string policyHolding, bool includeAttachment)
+        {
+
+            Repository repository = new Repository(ConnectionName);
+            try
+            {
+                repository.OpenConnection();
+
+                var pInfo = repository.GetPolicyIdInfo(channelType, policy, policyHolding);
+                var mailPolicys = repository.GetEML_MAIL_POLICY(new long[] { pInfo.PolicyId });
+                if (mailPolicys != null && mailPolicys.Any())
+                {
+                    return GetMailInfoLog(mailPolicys.Select(item => item.EML_MAIL_ID.Value).ToArray(), includeAttachment);
+                }
+
+            }
+            finally
+            {
+                repository.CloseConnection();
+            }
+            return null;
+        }
+
+        private void SendMailToClient(MailParams param, string hostIP)
+        {
+            SmtpClient smtp = new SmtpClient();
+            try
+            {
+                //ref  EML_SENDER sender,
+
+                string host = hostIP;
+                smtp.Host = host;
+                smtp.Port = int.Parse(Utility.AppSettings("smtpPort"));
+                smtp.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
+
+
+
+                using (var message = new MailMessage())
+                {
+                    message.From = new MailAddress(param.From);
+                    message.Subject = param.Subject;
+                    message.Body = param.Body;
+                    message.IsBodyHtml = param.IsHtmlBody;
+
+                    if (param.Receipients != null)
+                    {
+                        if (param.Receipients.To != null && param.Receipients.To.Any())
+                        {
+                            foreach (var item in param.Receipients.To)
+                            {
+                                message.To.Add(new MailAddress(item));
+                            }
+                        }
+                        if (param.Receipients.CC != null && param.Receipients.CC.Any())
+                        {
+                            foreach (var item in param.Receipients.CC)
+                            {
+                                message.CC.Add(new MailAddress(item));
+                            }
+                        }
+                        if (param.Receipients.BCC != null && param.Receipients.BCC.Any())
+                        {
+                            foreach (var item in param.Receipients.BCC)
+                            {
+                                message.Bcc.Add(new MailAddress(item));
+                            }
+                        }
+
+
+                        message.BodyEncoding = Encoding.UTF8;
+                        message.SubjectEncoding = Encoding.UTF8;
+                        List<MemoryStream> memoryList = new List<MemoryStream>();
+                        if (param.FileAttechments != null && param.FileAttechments.Any())
+                        {
+
+                            foreach (var item in param.FileAttechments)
+                            {
+                                MemoryStream memoryStream = new MemoryStream();
+
+                                memoryStream.Write(item.Data, 0, item.Data.Length);
+
+                                // Set the position to the beginning of the stream.
+                                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                                // Create attachment
+                                ContentType contentType = new ContentType();
+                                contentType.MediaType = MediaTypeNames.Application.Octet;
+                                contentType.Name = item.FileName;
+                                Attachment attachment = new Attachment(memoryStream, contentType);
+                                // Add the attachment
+                                message.Attachments.Add(attachment);
+                                memoryList.Add(memoryStream);
+
+                            }
+                        }
+
+                        smtp.Send(message);
+                        smtp.Dispose();
+
+                        if (memoryList != null && memoryList.Any())
+                        {
+                            foreach (var item in memoryList)
+                            {
+                                item.Dispose();
+                            }
+                            memoryList = null;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                smtp.Dispose();
+                throw ex;
+            }
+        }
+
+        private void SendMailToClientOld(MailParamsOld mailInfo, string hostIP)
+        {
+
+            Stream stream = null;
+            MailMessage mailClient = new MailMessage();
+            mailClient.Subject = mailInfo.BaseParam.Subject;
+
+            // prepare body message
+            if (mailInfo.BaseParam.IsHtmlBody)
+            {
+                string htmlBody = mailInfo.BaseParam.Body; // "<html><body><h1>Picture หกดหกดหกด หหดหกดหกด</h1><br><img src=\"cid:filename\" width='150'><img src=\"cid:filename\" width='150'></body></html>";
+                AlternateView avHtml = AlternateView.CreateAlternateViewFromString
+                   (htmlBody, null, MediaTypeNames.Text.Html);
+
+                if (mailInfo.IsEmbedImage)
+                {
+                    if (mailInfo.ImageDataFileInfo != null && mailInfo.ImageDataFileInfo != null && mailInfo.ImageDataFileInfo.Any())
+                    {
+
+                        foreach (var imgDataItem in mailInfo.ImageDataFileInfo)
+                        {
+                            stream = new MemoryStream(imgDataItem.ImageBytes);
+                            LinkedResource inline = new LinkedResource(stream, MediaTypeNames.Image.Jpeg);
+                            inline.ContentId = imgDataItem.ImageKeyName;
+                            avHtml.LinkedResources.Add(inline);
+                        }
+                    }
+
+                }
+                mailClient.AlternateViews.Add(avHtml);
+            }
+            else
+            {
+                mailClient.Body = mailInfo.BaseParam.Body;
+            }
+
+            // prepare file attachment;
+            if (mailInfo.BaseParam.FileAttechments != null && mailInfo.BaseParam.FileAttechments.Any())
+            {
+                foreach (var file in mailInfo.BaseParam.FileAttechments)
+                    mailClient.Attachments.Add(new Attachment(new MemoryStream(file.Data), file.FileName, file.ContentType));
+            }
+
+            //prepare send by 
+            mailClient.From = new MailAddress(mailInfo.BaseParam.From);
+
+            //prepare sent to  
+            if (mailInfo.BaseParam.Receipients.To != null && mailInfo.BaseParam.Receipients.To.Any())
+            {
+                foreach (var sendToItem in mailInfo.BaseParam.Receipients.To)
+                {
+                    mailClient.To.Add(sendToItem);
+                }
+            }
+
+            //prepare cc to  
+            if (mailInfo.BaseParam.Receipients.CC != null && mailInfo.BaseParam.Receipients.CC.Any())
+            {
+                foreach (var sendCCItem in mailInfo.BaseParam.Receipients.CC)
+                {
+                    mailClient.CC.Add(sendCCItem);
+                }
+            }
+
+            //prepare bcc to  
+            if (mailInfo.BaseParam.Receipients.BCC != null && mailInfo.BaseParam.Receipients.BCC.Any())
+            {
+                foreach (var sendBCCItem in mailInfo.BaseParam.Receipients.BCC)
+                {
+                    mailClient.Bcc.Add(sendBCCItem);
+                }
+            }
+
+            // preapre endcode message 
+            if (mailInfo.MailEncoding == MailEncoding.UTF8)
+            {
+                var encodeType = System.Text.Encoding.UTF8;
+                mailClient.BodyEncoding = encodeType;
+                mailClient.SubjectEncoding = encodeType;
+            }
+            else if (mailInfo.MailEncoding == MailEncoding.Window874)
+            {
+                var encodeType = Encoding.GetEncoding("windows-874");
+                mailClient.BodyEncoding = encodeType;
+                mailClient.SubjectEncoding = encodeType;
+            }
+            mailClient.IsBodyHtml = mailInfo.BaseParam.IsHtmlBody;
+            //  mail.Attachments.Add(att);
+
+            SmtpClient mySmtpClient = new SmtpClient();
+            mySmtpClient.Host = hostIP;
+            mySmtpClient.Port = int.Parse(Utility.AppSettings("smtpPort"));
+            mySmtpClient.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
+            mySmtpClient.Send(mailClient);
+            stream.Dispose();
+
+        }
+    }
+}
