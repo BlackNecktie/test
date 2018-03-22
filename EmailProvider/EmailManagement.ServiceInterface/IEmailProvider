@@ -1,0 +1,53 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.ServiceModel;
+using EmailManagement.BusinessLogic;
+using EmailManagement.ServiceInterface;
+using EmailManagement.DataContract;
+using ITUtility;
+using EmailManagement.DataContract.StructureModel;
+
+namespace EmailManagement.ServiceInterface
+{
+    [ServiceContract]
+
+    public interface IEmailProvider
+    {
+
+        [OperationContract]
+        ITUtility.ProcessResult SendMail(MailParams param, string userID);
+
+
+        [OperationContract]
+        ProcessResult SendMailOldVersion(MailParamsOld param, string userID);
+
+        [OperationContract]
+        ProcessResult GetMailAboutPolicyInfoByMailId(out MailInfo[] mailObjects, long[] mailId, bool includeAttachment);
+
+
+        [OperationContract]
+        ITUtility.ProcessResult GetMailAbountPolicyInfoByPolicyAndHolding(out MailInfo[] mailObjects, string channelType, string policy, string policyHolding, bool includeAttachment);
+        [OperationContract]
+        ITUtility.ProcessResult GetMailInfoByReference(out MailInfo[] mailObjects, string refName, string refValue, bool includeAttachment);
+        [OperationContract]
+        ITUtility.ProcessResult GetMailInfoByAppNo(out MailInfo[] mailObjects, string appNo, bool includeAttachment);
+        [OperationContract]
+        ITUtility.ProcessResult GetMailAboutPolicyInfo(out MailInfo[] mailObjects, long[] policyId, bool includeAttachment);
+
+        [OperationContract]
+        ITUtility.ProcessResult GetMailAbountPolicyInfoByPolicyNo(out MailInfo[] mailObjects, string channelType, string policy, bool includeAttachment);
+        [OperationContract]
+
+        ITUtility.ProcessResult GetFileAttechments(out File_Upload[] mailObjects, long?[] mailIds);
+
+        [OperationContract]
+
+        ProcessResult GetMailHistoryByPolicyId(out MailInfo[] mailObjects, long policyId, bool includeAttachment = true);
+        [OperationContract]
+
+        ProcessResult GetMailHistoryByAppNo(out MailInfo[] mailObjects, string appNo, bool includeAttachment = true);
+    }
+}
