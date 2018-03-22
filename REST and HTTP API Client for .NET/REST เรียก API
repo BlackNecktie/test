@@ -28,3 +28,47 @@ private string GET3(string urlClient)
             }
             return null;
         }
+
+
+[HttpPost]
+        public JsonResult GetInsuregroupAPIByPolicy(string policyId,string certId, string TokenTicket)
+        {
+            try
+            {
+                string apiAddress = GetInsuregroupAPI() + "/api/Benefit/PostMemberSearch";
+                //http://pre-uat-01.bla.co.th/GCallCenter.Proxy.API/api/Benefit/PostMemberSearch
+                var client = new RestClient(apiAddress);
+                var request = new RestRequest(Method.POST);
+                request.RequestFormat = DataFormat.Json;
+                request.AddParameter("policyId", policyId);
+                request.AddParameter("certId", certId);
+                request.AddParameter("TokenTicket", TokenTicket);
+                //request.AddParameter("TokenTicket", System.Web.HttpUtility.UrlEncode(TokenTicket));
+
+                //var response = client.Execute<List<Models.GCallCenterToken>>(request);
+                var response = client.Execute(request);
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    if (response != null)
+                    {
+                        //url_redirect += response.Data.Select(s => "/"+s.access_token+"/"+s.refresh_token).FirstOrDefault();
+                        return Json(new
+                        {
+                            response.Content
+                        }, JsonRequestBehavior.AllowGet);
+                    }
+                    else
+                    {
+                        return Json(null, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                else
+                {
+                    return Json(null, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch(Exception ex)
+            {
+                return Json(ex.Message, JsonRequestBehavior.AllowGet);
+            }
+        }
