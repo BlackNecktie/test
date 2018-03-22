@@ -1,0 +1,250 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using EmailManagement.BusinessLogic;
+using EmailManagement.DataContract;
+using ITUtility;
+using EmailManagement.DataContract.StructureModel;
+
+namespace EmailManagement.ServiceInterface
+{
+    public class EmailProvider : IEmailProvider
+    {
+
+
+        public ProcessResult SendMail(MailParams param, string userID)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                logic.SendMail(param, userID);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+
+        public ProcessResult SendMailOldVersion(MailParamsOld param, string userID)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                logic.SendMailOld(param, userID);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+
+
+
+        public ProcessResult GetMailAboutPolicyInfoByMailId(out MailInfo[] mailObjects, long[] mailId, bool includeAttachment = true)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                mailObjects = logic.GetMailAboutPolicyInfoByMailId(mailId, includeAttachment);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                mailObjects = null;
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+
+
+        public ProcessResult GetMailAboutPolicyInfo(out MailInfo[] mailObjects, long[] policyId, bool includeAttachment = true)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                mailObjects = logic.GetMailAboutPolicyInfo(policyId,includeAttachment);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                mailObjects = null;
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+
+
+        public ProcessResult GetMailInfoByAppNo(out MailInfo[] mailObjects, string appNo, bool includeAttachment = true)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                mailObjects = logic.GetMailInfoByAppNo(appNo,includeAttachment);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                mailObjects = null;
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+
+        public ProcessResult GetMailInfoByReference(out MailInfo[] mailObjects, string refName, string refValue, bool includeAttachment = true)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                mailObjects = logic.GetMailInfoWithReference(refName, refValue,includeAttachment);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                mailObjects = null;
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+
+        public ProcessResult GetMailAbountPolicyInfoByPolicyNo(out MailInfo[] mailObjects, string channelType, string policy, bool includeAttachment = true)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                mailObjects = logic.GetMailAboutPolicyInfo(channelType, policy, null, includeAttachment);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                mailObjects = null;
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+        public ProcessResult GetMailAbountPolicyInfoByPolicyAndHolding(out MailInfo[] mailObjects, string channelType, string policy, string policyHolding, bool includeAttachment = true)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                mailObjects = logic.GetMailAboutPolicyInfo(channelType, policy, policyHolding, includeAttachment);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                mailObjects = null;
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+
+        public ProcessResult GetFileAttechments(out File_Upload[] mailObjects, long?[] mailIds)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+            try
+            {
+                mailObjects = logic.GetFileAttechments(mailIds);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                mailObjects = null;
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+
+        public ProcessResult GetMailHistoryByAppNo(out MailInfo[] mailObjects, string appNo, bool includeAttachment = true)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                mailObjects = logic.GetMailHistoryByAppNo(appNo, includeAttachment);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                mailObjects = null;
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+        public ProcessResult GetMailHistoryByPolicyId(out MailInfo[] mailObjects, long policyId, bool includeAttachment = true)
+        {
+            var pr = new ProcessResult();
+            var logic = new LogicV2();
+
+            try
+            {
+                mailObjects = logic.GetMailHistoryByPolicyId(policyId, includeAttachment);
+                pr.Successed = true;
+            }
+            catch (Exception e)
+            {
+                mailObjects = null;
+                pr.Successed = false;
+                pr.ErrorMessage = e.Message.ToString();
+            }
+
+            return pr;
+        }
+
+
+
+
+    }
+}
