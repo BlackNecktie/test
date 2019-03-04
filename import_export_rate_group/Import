@@ -1,0 +1,255 @@
+declare @Output1 xml ,@Count1 int ,@Status1 int  ,@Message1 nvarchar(500)
+exec [SpImportExcelToTable] 
+'E:\Documents\Import_Export_Excel\Testing\Import data test.xlsx',
+@Output= @Output1 output,
+--@Count=@Count1 output,
+@Status=@Status1 output ,
+@Message=@Message1 output
+
+
+
+
+
+
+use MyDB
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE SpImportExcelToTable
+(
+									 @FileName nvarchar(250)
+									--,@SheetName nvarchar(50)
+									,@Output xml output
+									,@Status int output
+									,@Message nvarchar(500) output
+								)
+AS
+BEGIN
+
+	SET NOCOUNT ON;
+	----------------------------------------------------GET SHEET IN EXCEL FILE--------------------------------------------------
+		-- SET THESE!
+	declare @linkedServerName sysname = 'TempExcelSpreadsheet'
+	--declare @excelFileUrl nvarchar(1000) = 'E:\Documents\Import_Export_Excel\Testing\Import data test.xlsx'
+	declare @excelFileUrl nvarchar(1000) = @FileName
+	-- /SET
+
+	-- Remove existing linked server (if necessary)
+	if exists(select null from sys.servers where name = @linkedServerName) begin
+		exec sp_dropserver @server = @linkedServerName, @droplogins = 'droplogins'
+	end
+
+	-- Add the linked server
+	-- ACE 12.0 seems to work for both xsl and xslx, though some might prefer the older JET provider
+	exec sp_addlinkedserver
+		@server = @linkedServerName,
+		@srvproduct = 'ACE 12.0',
+		@provider = 'Microsoft.ACE.OLEDB.12.0',
+		@datasrc = @excelFileUrl,
+		@provstr = 'Excel 12.0;HDR=Yes'
+
+	-- Grab the current user to use as a remote login
+	declare @suser_sname nvarchar(256) = suser_sname()
+
+	-- Add the current user as a login
+	exec sp_addlinkedsrvlogin
+		@rmtsrvname = @linkedServerName,
+		@useself = 'false',
+		@locallogin = @suser_sname,
+		@rmtuser = null,
+		@rmtpassword = null
+
+	-- Return the table/column info
+	--exec sp_tables_ex @linkedServerName
+
+	CREATE TABLE #tmp_sp_tables_ex
+	(
+	   table_cat sysname null,
+	   table_schem sysname null,
+	   table_name sysname,
+	   table_type varchar(32),
+	   remarks varchar(254)
+	)
+
+	INSERT INTO #tmp_sp_tables_ex
+	exec sp_tables_ex @linkedServerName
+
+	select ROW_NUMBER() over(order by table_name) as sheet_row_num, * into #tmp_sheet from #tmp_sp_tables_ex
+
+	--select*from #tt
+	--exec sp_columns_ex @linkedServerName
+
+	-- Remove temp linked server
+	if exists(select null from sys.servers where name = @linkedServerName) begin
+		exec sp_dropserver @server = @linkedServerName, @droplogins = 'droplogins'
+	end
+
+	declare @sheet_amount int = (select COUNT(*) from #tmp_sheet)
+	declare @sheet_counter int = 1
+
+	--select*from #tmp_sheet
+
+	
+
+
+	------------------------------------------------------IMPORT FILE TO TEMP--------------------------------------------------
+
+	while @sheet_counter <= @sheet_amount
+	begin
+		declare @sheet_name nvarchar = (select table_name from #tmp_sheet where sheet_row_num = @sheet_counter)
+		declare @_line char(2) = char(13) + char(10)
+		declare @q nvarchar= (select concat('select top 1 * from',@sheet_name))
+		 --   SELECT * INTO #temp
+			--FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
+			--'Excel 12.0;HDR=NO; Database=E:\Documents\Import_Export_Excel\Testing\Import data test.xlsx', '''select top 1 * from [', @q, '$]''');
+			declare @qu nvarchar(max)=
+			concat(
+				'select * ',@_line,
+				'into #temp',@_line,
+				'(',@_line,
+				'''microsoft.ace.oledb.12.0'',',@_line,
+				'''excel 8.0;hdr=no;database=',@FileName,''',',@_line,
+				'''select * from [',@sheet_name,'$]''',@_line,
+				')',@_line
+				)
+
+				execute sp_executesql 
+				@qu
+				,N'@Out xml output'
+				,@Out = @Output output
+
+		--set @Status = 1
+		--declare 
+		--	@_Query nvarchar(max)
+		--	,@_line char(2) = char(13) + char(10)
+		--	,@_Count int
+
+		--begin try
+
+		--	-- { Schema } ------------------
+		--	set @_Query =
+		--	concat
+		--	(
+		--		'select top 0 *', @_line,
+		--		'into #tmp', @_line,
+		--		'from ', @_line,
+		--		'openrowset', @_line,
+		--		'(', @_line,
+		--			'''microsoft.ace.oledb.12.0'',', @_line,
+		--			'''excel 8.0;hdr=no;database=', @FileName, ''',', @_line,
+		--			'''select top 1 * from [', @sheet_name, '$]''', @_line,
+		--		')', @_line
+		--	)
+
+		--	-- { DataType } --------------
+		--	set @_Query =
+		--	concat
+		--	(
+		--		@_Query, @_line,
+		--		'declare ', @_line,
+		--			'@_Query nvarchar(max),', @_line,
+		--			'@line char(2) = char(13) + char(10)', @_line,
+		--		'select @_Query = ', @_line,
+		--		'stuff(( ', @_line,
+		--				'select @line, ''alter table #tmp alter column '' + name + '' nvarchar(max)''', @_line,
+		--				'from tempdb.sys.columns', @_line,
+		--				'where object_id = object_id(''tempdb..#tmp'')', @_line,
+		--				'for xml path(''''), type).value(''.'', ''nvarchar(max)''), 1, 1, '''')', @_line,
+		--		'execute sp_executesql @_Query', @_line
+		--	)
+
+		--	-- { Read } ------------------
+		--	set @_Query =
+		--	concat
+		--	(
+		--		@_Query, @_line,
+		--		'insert #tmp', @_line,
+		--		'select *', @_line,
+		--		'from', @_line,
+		--		'openrowset', @_line,
+		--		'(', @_line,
+		--			'''microsoft.ace.oledb.12.0'',', @_line,
+		--			'''excel 8.0;hdr=no;imex=1;database=', @FileName, ''',', @_line,
+		--			'''select * from [', @sheet_name, '$]''', @_line,
+		--		')', @_line,
+		--		'delete top (1) from #tmp', @_line
+		--	)
+
+		--	-- { Trim } ------------------
+		--	set @_Query =
+		--	concat
+		--	(
+		--		@_Query, @_line,
+		--		'declare ', @_line,
+		--			'@_Query2 nvarchar(max),', @_line,
+		--			'@line2 char(2) = char(13) + char(10)', @_line,
+		--		'select @_Query2 = ', @_line,
+		--		'stuff(( ', @_line,
+		--				'select @line2, ''update #tmp set '' + name + '' = ltrim(rtrim(convert(nvarchar(max), '' + name + '')))''', @_line,
+		--				'from tempdb.sys.columns', @_line,
+		--				'where object_id = object_id(''tempdb..#tmp'')', @_line,
+		--				'for xml path(''''), type).value(''.'', ''nvarchar(max)''), 1, 1, '''')', @_line,
+		--		'execute sp_executesql @_Query2', @_line
+		--	)
+
+		--	-- { Output } ------------------
+		--	set @_Query =
+		--	concat
+		--	(
+		--		@_Query, @_line,
+		--		'select @Out =', @_line,
+		--		'(', @_line,
+		--			'select (row_number() over (order by (select 0)) + 1) as Sequence, *', @_line,
+		--			'from #tmp', @_line,
+		--			'for xml raw(''Information''), root(''Root''), elements', @_line,
+		--		')', @_line,
+		--		'declare @_Count int', @_line,
+		--		'select @_Count = count(1)', @_line,
+		--		'from tempdb.sys.columns', @_line,
+		--		'where object_id = object_id(''tempdb..#tmp'')', @_line,
+		--		'set @Out.modify', @_line,
+		--		'(', @_line,
+		--			'''insert <Count>{sql:variable("@_Count")}</Count>', @_line,
+		--			'into (/Root[1])''', @_line,
+		--		')'
+
+		--	)
+
+		--	--set @_Query = @_Query+'select*from #tmp' --# By MO
+
+		--	execute sp_executesql 
+		--		@_Query
+		--		,N'@Out xml output'
+		--		,@Out = @Output output
+
+		--	if (@_Query = null)
+		--	begin
+		--		set @Status = 0
+		--		set @Message = 'รูปแบบไฟล์ไม่ถูกต้อง'
+		--	end
+
+		--end try
+		--begin catch
+		--	set @Status = 0
+		--	set @Message = 'รูปแบบไฟล์ไม่ถูกต้อง' + @_line + error_message()
+		--end catch
+
+
+		set @sheet_counter = @sheet_counter + 1
+	end
+
+	--execute sp_executesql 'select * from #tmp'
+	--,N'@Out xml output'
+	--,@Out = @Output output
+
+	
+	--select * from #tmp_sheet
+	drop table #tmp_sp_tables_ex
+	drop table #tmp_sheet
+END
+GO
+
+
