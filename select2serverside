@@ -1,0 +1,103 @@
+public class Select2PagedResult
+    {
+        public int Total { get; set; }
+        public List<Select2OptionModel> Results { get; set; }
+    }
+    public class Select2OptionModel
+    {
+        public string id { get; set; }
+        public string text { get; set; }
+    }
+
+public class Home{
+[HttpPost]
+        public JsonResult GetOptionList(string searchTerm, int pageSize, int pageNumber)
+        {
+
+            var select2Repository = new Select2Repository();
+
+            var result = select2Repository.GetSelect2PagedResult(searchTerm, pageSize, pageNumber);
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+}
+
+public class Select2Repository
+    {
+        IQueryable<Select2OptionModel> AllOptionsList;
+
+        public Select2Repository()
+        {
+            AllOptionsList = GetSelect2Options();
+        }
+        public Select2PagedResult GetSelect2PagedResult(string searchTerm, int pageSize, int pageNumber)
+        {
+
+            var select2pagedResult = new Select2PagedResult();
+
+            var totalResults = 0;
+
+            select2pagedResult.Results = GetPagedListOptions(searchTerm, pageSize, pageNumber, out totalResults);
+
+            select2pagedResult.Total = totalResults;
+
+            return select2pagedResult;
+
+        }
+        public List<Select2OptionModel> GetPagedListOptions(string searchTerm, int pageSize, int pageNumber, out int totalSearchRecords)
+
+        {
+
+            var allSearchedResults = GetAllSearchResults(searchTerm);
+
+            totalSearchRecords = allSearchedResults.Count;
+
+            return allSearchedResults.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+        }
+
+        public List<Select2OptionModel> GetAllSearchResults(string searchTerm)
+        {
+            var resultList = new List<Select2OptionModel>();
+            if (AllOptionsList.Any())
+            {
+                resultList = AllOptionsList.ToList();
+            }
+            else
+            {
+                //resultList = new VmiBAL().GetSaleCode();
+            }
+            if (!string.IsNullOrEmpty(searchTerm))
+                resultList = AllOptionsList.Where(n => n.text.ToLower().Contains(searchTerm.ToLower())).ToList();
+            else
+                resultList = AllOptionsList.ToList();
+            return resultList;
+        }
+
+        private IQueryable<Select2OptionModel> GetSelect2Options()
+        {
+            string cacheKey = "Select2Options";
+            //check cache
+
+            if (HttpContext.Current.Cache[cacheKey] != null)
+            {
+                return (IQueryable<Select2OptionModel>)HttpContext.Current.Cache[cacheKey];
+            }
+
+            var optionList = new List<Select2OptionModel>();
+            var optionText = "Option Number ";
+            for (int i = 1; i < 1000; i++)
+            {
+                optionList.Add(new Select2OptionModel
+                {
+                    id = i.ToString(),
+                    text = optionText + i
+                });
+            }
+
+            var result = optionList.AsQueryable();
+            //cache results
+            HttpContext.Current.Cache[cacheKey] = result;
+            return result;
+        }
+    }
