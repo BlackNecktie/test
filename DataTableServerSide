@@ -1,0 +1,81 @@
+[HttpPost]
+        public JsonResult GetVmiDataServerside(DataTableAjaxModel model)
+        {
+            int totalResultsCount = model.length;
+            int totalFilterResultsCount = 0;
+
+            var result = _repo.VmiBAL.GetVmi(model.search, model.start, model.length, out totalFilterResultsCount);
+            string jsonObject = JsonConvert.SerializeObject(result);
+            return Json(new
+            {
+                draw = model.draw,
+                recordsTotal = totalResultsCount,
+                recordsFiltered = totalFilterResultsCount,
+                data = result
+            }, JsonRequestBehavior.AllowGet);
+        }
+        
+        
+        
+        
+        
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<table id="vmiTable" class="display responsive nowrap" style="width:100%;">
+        <thead>
+            <tr>
+                <th>เลขกรมธรรม์</th>
+                <th>เลขตัวถัง</th>
+                <th>อีเมล์</th>
+                <th>ผุ้เอาประกัน</th>
+                <th>ตัวแทน</th>
+                <th>วันที่บันทึกข้อมูล</th>
+                <th>ผู้บันทึกข้อมูล</th>
+                <th></th>
+            </tr>
+        </thead>
+    </table>
+    
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+$('#vmiTable').DataTable({
+            serverSide: true,
+            Processing: true,
+            deferRender: true,
+            destroy: true,
+            paging: true,
+            ordering: true,
+            filter: true,
+            searching: false,
+            select: true,
+            responsive: true,
+            scrollY: "500px",
+            scrollCollapse: true,
+            ajax: {
+                url: $('#vmiUrl').val(),
+                type: 'POST',
+                dataType: 'JSON',
+                data: {
+                    search: getVmiParam()
+                },
+            },
+            "columns": [
+                { "data": "policy_no", "className": "table-text-align-center" },
+                { "data": "chassis" },
+                { "data": "e_mail" },
+                { "data": "insurer_name" },
+                { "data": "agent_name" },
+                { "data": "insert_date", "className": "table-text-align-center" },
+                { "data": "insert_login", "className": "table-text-align-center" },
+                {
+                    "data": "policy_no", "render": function (data, type, row, meta) {
+                        var p = "'" + row.policy_no + "'";
+                        return '<button class="btn btn-action" onclick="OpenModal(\'VMI\',this,' + meta.row + ')">ส่งอีเมล์</button>';
+                    }, "className": "table-text-align-center"
+                }
+            ],
+            order: [[0, 'desc']],
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            pagingType: "full_numbers"
+        })
